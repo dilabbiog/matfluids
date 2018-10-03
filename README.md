@@ -2,6 +2,7 @@
 A MATLAB package for processing fluid flow data.
 
 --
+
 Copyright (C) 2018 Giuseppe Di Labbio
 
 This program is free software: you can redistribute it and/or modify it
