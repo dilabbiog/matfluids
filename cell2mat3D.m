@@ -128,7 +128,7 @@ clear c k n r;
 %% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%
 
 %#ok<*ISMAT>
-% Line(s) 63
+% Line(s) 82
 % Message(s)
 % * When checking if a variable is a matrix consider using ISMATRIX.
 % Reason(s)
