@@ -7,9 +7,26 @@
 %                                                                         %
 % Giuseppe Di Labbio                                                      %
 % Department of Mechanical, Industrial & Aerospace Engineering            %
-% Concordia University Montréal, Canada                                   %
+% Concordia University MontrÃ©al, Canada                                   %
 %                                                                         %
-% Last Update: October 2nd, 2018 by Giuseppe Di Labbio                    %
+% Last Update: October 3rd, 2018 by Giuseppe Di Labbio                    %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% Copyright (C) 2018 Giuseppe Di Labbio                                   %
+%                                                                         %
+% This program is free software: you can redistribute it and/or modify it %
+% under the terms of the GNU General Public License as published by the   %
+% Free Software Foundation, either version 3 of the License, or (at your  %
+% option) any later version.                                              %
+%                                                                         %
+% This program is distributed in the hope that it will be useful, but     %
+% WITHOUT ANY WARRANTY; without even the implied warranty of              %
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU        %
+% General Public License for more details.                                %
+%                                                                         %
+% You should have received a copy of the GNU General Public License along %
+% with this program. If not, see <https://www.gnu.org/licenses/>.         %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -158,11 +175,11 @@ end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% Line(s) 117                                                             %
+% Line(s) 134                                                             %
 % * Note that the 'C' field, which should contain the mask information,   %
 %   is used only to be consistent with other codes in this package.       %
 %                                                                         %
-% Line(s) 123                                                             %
+% Line(s) 140                                                             %
 % * Note that flipud(y) is used in constructing the grid. This is simply  %
 %   in order to be consistent with other codes in this package where the  %
 %   values of X increase from left to right and the values of Y increase  %

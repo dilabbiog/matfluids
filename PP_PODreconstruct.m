@@ -7,9 +7,26 @@
 %                                                                         %
 % Giuseppe Di Labbio                                                      %
 % Department of Mechanical, Industrial & Aerospace Engineering            %
-% Concordia University Montréal, Canada                                   %
+% Concordia University MontrÃ©al, Canada                                   %
 %                                                                         %
 % Last Update: October 3rd, 2018 by Giuseppe Di Labbio                    %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% Copyright (C) 2018 Giuseppe Di Labbio                                   %
+%                                                                         %
+% This program is free software: you can redistribute it and/or modify it %
+% under the terms of the GNU General Public License as published by the   %
+% Free Software Foundation, either version 3 of the License, or (at your  %
+% option) any later version.                                              %
+%                                                                         %
+% This program is distributed in the hope that it will be useful, but     %
+% WITHOUT ANY WARRANTY; without even the implied warranty of              %
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU        %
+% General Public License for more details.                                %
+%                                                                         %
+% You should have received a copy of the GNU General Public License along %
+% with this program. If not, see <https://www.gnu.org/licenses/>.         %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -33,7 +50,7 @@
 % [1] Sirovich, L. (1987). Turbulence and the dynamics of coherent        %
 %     structures, Part I: Coherent structures. Quarterly of Applied       %
 %     Mathematics, 45(3), 561-571.                                        %
-% [2] Meyer, K., Pedersen, J. M. & Özkan, O. (2007). A turbulent jet in   %
+% [2] Meyer, K., Pedersen, J. M. & Ã–zkan, O. (2007). A turbulent jet in   %
 %     crossflow analysed with proper orthogonal decomposition. Journal of %
 %     Fluid Mechanics, 583, 199-227.                                      %
 % [3] Aubry, N. (1991). On the hidden beauty of proper orthogonal         %
