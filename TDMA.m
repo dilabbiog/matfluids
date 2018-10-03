@@ -7,9 +7,26 @@
 %                                                                         %
 % Giuseppe Di Labbio                                                      %
 % Department of Mechanical, Industrial & Aerospace Engineering            %
-% Concordia University Montréal, Canada                                   %
+% Concordia University MontrÃ©al, Canada                                   %
 %                                                                         %
-% Last Update: October 2nd, 2018 by Giuseppe Di Labbio                    %
+% Last Update: October 3rd, 2018 by Giuseppe Di Labbio                    %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% Copyright (C) 2018 Giuseppe Di Labbio                                   %
+%                                                                         %
+% This program is free software: you can redistribute it and/or modify it %
+% under the terms of the GNU General Public License as published by the   %
+% Free Software Foundation, either version 3 of the License, or (at your  %
+% option) any later version.                                              %
+%                                                                         %
+% This program is distributed in the hope that it will be useful, but     %
+% WITHOUT ANY WARRANTY; without even the implied warranty of              %
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU        %
+% General Public License for more details.                                %
+%                                                                         %
+% You should have received a copy of the GNU General Public License along %
+% with this program. If not, see <https://www.gnu.org/licenses/>.         %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -140,21 +157,21 @@ end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% Line(s) 120                                                             %
+% Line(s) 137                                                             %
 % * Alternatively, strcmp() could be used (which may improve the speed of %
 %   the function if it is within a loop), however keep in mind that the   %
 %   comparison will be case sensitive as opposed to strcmpi() which is    %
 %   case insensitive. In this case, the call occurs but once and cannot   %
 %   be expected to improve computation time significantly.                %
 %                                                                         %
-% Line(s) 125                                                             %
+% Line(s) 142                                                             %
 % * Note the zeros appended to the vectors 'a' and 'c'. The spdiags()     %
 %   function requires the diagonal vector inputs to have the same length, %
 %   however for lower diagonal number 'p', the function will store the    %
 %   first 'n - p' entries and for upper diagonal number 'q', the function %
 %   will store the last 'n - q' entries.                                  %
 %                                                                         %
-% Line(s) 128                                                             %
+% Line(s) 145                                                             %
 % * MATLAB's backslash is very efficient as it takes into account several %
 %   algorithms for different matrix types. However, in this case, the     %
 %   computation time required when using spdiags() combined with MATLAB's %
