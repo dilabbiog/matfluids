@@ -7,9 +7,26 @@
 %                                                                         %
 % Giuseppe Di Labbio                                                      %
 % Department of Mechanical, Industrial & Aerospace Engineering            %
-% Concordia University Montréal, Canada                                   %
+% Concordia University MontrÃ©al, Canada                                   %
 %                                                                         %
 % Last Update: October 3rd, 2018 by Giuseppe Di Labbio                    %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% Copyright (C) 2018 Giuseppe Di Labbio                                   %
+%                                                                         %
+% This program is free software: you can redistribute it and/or modify it %
+% under the terms of the GNU General Public License as published by the   %
+% Free Software Foundation, either version 3 of the License, or (at your  %
+% option) any later version.                                              %
+%                                                                         %
+% This program is distributed in the hope that it will be useful, but     %
+% WITHOUT ANY WARRANTY; without even the implied warranty of              %
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU        %
+% General Public License for more details.                                %
+%                                                                         %
+% You should have received a copy of the GNU General Public License along %
+% with this program. If not, see <https://www.gnu.org/licenses/>.         %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -23,7 +40,7 @@
 % This function was sparked by Lukasz Panek's script (publicly available  %
 % at [1]) which writes several of MATLAB's colormaps to files for use in  %
 % TecPlot 360. My original intention and use for this function was to     %
-% translate the perceptually uniform colormaps created by Stéfan van der  %
+% translate the perceptually uniform colormaps created by StÃ©fan van der  %
 % Walt and Nathaniel Smith, which were posted on MATLAB's File Exchange   %
 % by Ander Biguri at [2], for use in TecPlot 360. I eventually started    %
 % making my own equation-governed colormaps in MATLAB which I would bring %
