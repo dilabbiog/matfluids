@@ -7,9 +7,9 @@
 %                                                                         %
 % Giuseppe Di Labbio                                                      %
 % Department of Mechanical, Industrial & Aerospace Engineering            %
-% Concordia University MontrÃ©al, Canada                                   %
+% Concordia University Montréal, Canada                                   %
 %                                                                         %
-% Last Update: October 3rd, 2018 by Giuseppe Di Labbio                    %
+% Last Update: October 11th, 2018 by Giuseppe Di Labbio                   %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -33,49 +33,67 @@
 % SYNTAX                                                                  %
 %                                                                         %
 % FTLE = PP_FTLE(VEC, t, dt, rf, freq, dir);                              %
-% FTLE = PP_FTLE(VEC, t, dt, rf, freq, dir, 'append');                    %
-% FTLE = PP_FTLE(VEC, t, dt, rf, freq, dir, 'mask');                      %
-% FTLE = PP_FTLE(VEC, t, dt, rf, freq, dir, 'mask', 'append');            %
+% FTLE = PP_FTLE(VEC, t, dt, rf, freq, dir, options);                     %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% This function computes the forward or backward finite-time Lyapunov     %
-% exponent of vector field evolving in time (with a known frequency). The %
-% range, step range and refinement factor are all adjustable. The user    %
-% has the option of using mask information as well as of appending part   %
-% of the time series ahead or behind the dataset in the case of periodic  %
-% flows.                                                                  %
+% This function computes the finite-time Lyapunov exponent (FTLE) field   %
+% of a discrete velocity field time series evolving with a fixed time     %
+% step (or frequency); see [1-4]. While the FTLE field is most commonly   %
+% used as a heuristic means of detecting Lagrangian coherent structures   %
+% (LCSs), some care must be taken in such a context to consider false     %
+% positives and false negatives that may arise [5]. For a review of LCSs  %
+% and how the theory pulled away from FTLEs, refer to [6] and the         %
+% references therein. This function permits the user to compute the FTLE  %
+% field for a specified subset of the time series by integrating forward  %
+% or backward over an integration time specified by the user. The user    %
+% also has the option of spatially refining the grid using a uniform      %
+% refinement factor. Options are made available to use mask information   %
+% as well as to append part of the time series ahead or behind the        %
+% dataset in the case of periodic flows.                                  %
 %                                                                         %
 % References:                                                             %
-% Coming soon ...                                                         %
+% [1] Haller, G. (2000). Finding finite-time invariant manifolds in two-  %
+%     dimensional velocity fields. Chaos, 10(1), 99-108.                  %
+% [2] Haller, G. (2001). Distinguished material surfaces and coherent     %
+%     structures in three-dimensional fluid flows. Physica D, 149, 248-   %
+%     277.                                                                %
+% [3] Shadden, S. C., Lekien, F. & Marsden, J. E. (2005). Definition and  %
+%     properties of Lagrangian coherent structures from finite-time       %
+%     Lyapunov exponents in two-dimensional aperiodic flows. Physica D,   %
+%     212, 271-304.                                                       %
+% [4] Green, M. A., Rowley, C. W., & Haller, G. (2007). Detection of      %
+%     Lagrangian coherent structures in three-dimensional turbulence.     %
+%     Journal of Fluid Mechanics, 572, 111-120.                           %
+% [5] Haller, G. (2011). A variational theory of hyperbolic Lagrangian    %
+%     coherent structures. Physica D, 240, 574-598.                       %
+% [6] Haller, G. (2015). Lagrangian coherent structures. Annual Review of %
+%     Fluid Mechanics, 47, 137-162.                                       %
 %                                                                         %
 % ----------------------------------------------------------------------- %
 % Variables:                                                              %
 % ----------------------------------------------------------------------- %
-% 'dir'        - SPECIFIC STRING                                          %
-%              - The direction in which to compute the finite-time        %
-%                Lyapunov exponent, namely backward ('bwd') or forward    %
-%                ('fwd').                                                 %
+% 'dir'        - STRING                                                   %
+%              - The integration direction to compute the finite-time     %
+%                Lyapunov exponent field, namely backward ('bwd') or      %
+%                forward ('fwd').                                         %
 % ----------------------------------------------------------------------- %
 % 'dt'         - INTEGER SCALAR                                           %
 %              - The number of time steps over which to compute the       %
-%                finite-time Lyapunov exponent.                           %
+%                finite-time Lyapunov exponent (the integration time).    %
 % ----------------------------------------------------------------------- %
 % 'freq'       - REAL SCALAR                                              %
-%              - The temporal frequency of the data set (the reciprocal   %
+%              - The temporal frequency of the dataset (the reciprocal    %
 %                of the duration of each time step).                      %
 % ----------------------------------------------------------------------- %
-% 'FTLE'       - 1D CELL, ELEMENTS: STRUCTS                               %
-%              - Finite-time Lyapunov exponent field stored in a cell     %
-%                array of structs. The cell number denotes the time step  %
-%                number beginning from the desired range. Each cell is a  %
-%                struct containing the refined mask ('C'), the refined    %
-%                grid ('X' and 'Y') and FTLE value ('Val').               %
-% ----------------------------------------------------------------------- %
-% 'opt'        - SPECIFIC STRING                                          %
-%              - Option to use the mask information contained in VEC.C    %
-%                using 'mask' and to append data ahead or behind of the   %
-%                velocity vector field using 'append'.                    %
+% 'FTLE'       - 1D CELL ARRAY                                            %
+%              ---> ELEMENTS: STRUCTS                                     %
+%              - Finite-time Lyapunov exponent field stored in a one-     %
+%                dimensional cell array of structs. The cell number       %
+%                denotes the time step number beginning from the start of %
+%                the desired range. Each struct contains as fields the,   %
+%                possibly refined, mask ('C'), grid ('X' and 'Y') and     %
+%                FTLE field ('Val').                                      %
 % ----------------------------------------------------------------------- %
 % 'rf'         - INTEGER SCALAR                                           %
 %              - The refinement factor denotes the multiple over which    %
@@ -85,10 +103,34 @@
 %              - The range over which to compute the finite-time Lyapunov %
 %                exponent in the form [t(1) t(2)].                        %
 % ----------------------------------------------------------------------- %
-% 'VEC'        - 1D CELL, ELEMENTS: STRUCTS                               %
-%              - One-dimensional cell array of structs each containing    %
-%                information on the spatial mask (C), velocity components %
-%                (U and V), and Cartesian grid (X and Y).                 %
+% 'VEC'        - 1D CELL ARRAY                                            %
+%              ---> ELEMENTS: STRUCTS                                     %
+%              - Velocity field stored in a one-dimensional cell array of %
+%                structs. The cell number denotes the time step number.   %
+%                Each struct contains as fields the spatial mask ('C'),   %
+%                Cartesian grid ('X' and 'Y') and velocity components     %
+%                ('U' and 'V').                                           %
+% ----------------------------------------------------------------------- %
+% Options:                                                                %
+% ----------------------------------------------------------------------- %
+% 'append'     - SPECIFIC STRING                                          %
+%              - Option to append data ahead or behind of the velocity    %
+%                field time series by considering the dataset 'VEC' to be %
+%                periodic and comprised of one full period. The data is   %
+%                appended as many times as needed to satisfy the forward  %
+%                or backward integration time defined by 'dt'.            %
+%              - Default: Not Active                                      %
+% ----------------------------------------------------------------------- %
+% 'mask'       - SPECIFIC STRING                                          %
+%              - Option to use the mask information contained in the 'C'  %
+%                field of the 'VEC' structs.                              %
+%              - Default: Not Active                                      %
+% ----------------------------------------------------------------------- %
+% 'XYinAll'    - SPECIFIC STRING                                          %
+%              - Option to store the 'X' and 'Y' fields in all the cells  %
+%                of the FTLE variable. If not specified, these fields are %
+%                only stored in the first cell.                           %
+%              - Default: Not Active                                      %
 % ----------------------------------------------------------------------- %
 %                                                                         %
 % EXAMPLE                                                                 %
@@ -97,9 +139,9 @@
 % dependent double gyre on the domain (x,y) = [0,2]x[0,1] with a constant %
 % grid spacing of 0.01 over the time interval [0,20] with time-step size  %
 % 0.1. Use A = 0.1, epsilon = 0.25, and omega = 2*pi/10. Use a refinement %
-% factor of 8 to calculate the backward FTLE field over the full data     %
-% range (i.e. [1 21]) with an integration step of 10. Note that you will  %
-% have to append data in such a case.                                     %
+% factor of 8 to calculate the backward FTLE field over the data range    %
+% [1 101] with an integration time of 151. Note that you will have to     %
+% append data in such a case.                                             %
 %                                                                         %
 % >> x = linspace(0, 2, 41).';                                            %
 % >> y = linspace(0, 1, 21).';                                            %
@@ -136,220 +178,262 @@
 %% PP_FTLE
 function [FTLE] = PP_FTLE(VEC, t, dt, rf, freq, dir, varargin)
 
-% Determine the new grid size in x and y.
+%% Parse the inputs.
+if nargin < 6
+    error('InputError:tooLittle', 'Not enough input arguments.');
+elseif nargin > 5 && nargin < 10
+    if ischar(dir)
+        chk = {'bwd' 'fwd'}.';
+        if ~max(strcmpi(dir, chk))
+            error('InputError:notValidDir',                             ...
+                 ['The specified integration direction could only be '  ...
+                  'one of the following: bwd or fwd.']);
+        end
+    else
+        error('InputError:notString1',                                  ...
+              'The integration direction must be a string.');
+    end
+    tmp = [0 0 0].';
+    for k = 1:nargin-6
+        chk = {'append' 'mask' 'XYinAll'}.';
+        if ischar(varargin{k})
+            if ~max(strcmpi(varargin{k}, chk))
+                error('InputError:notValidOpt',                             ...
+                    ['The specified input options could only be '       ...
+                     'selected from the following: append, mask or '    ...
+                     'XYinAll.']);
+            end
+            tmp = max(tmp,strcmpi(varargin{k}, chk));
+        else
+            error('InputError:notString2', 'The options must be strings.');
+        end
+    end
+    useAppend  = tmp(1);
+    useMask    = tmp(2);
+    useXYinAll = tmp(3);
+    clear chk tmp;
+else
+    error('InputError:tooMany', 'Too many input arguments.');
+end
+
+%% Determine the new grid size in x and y.
 nx = rf*size(VEC{1}.X, 2);
 ny = rf*size(VEC{1}.Y, 1);
 
-% Define a refined grid to compute the FTLE field over.
+%% Define a refined grid to compute the FTLE field over.
 x = linspace(VEC{1}.X(1,1), VEC{1}.X(1,end), nx);
-y = fliplr(linspace(VEC{1}.Y(end,1), VEC{1}.Y(1,1), ny));
+y = linspace(VEC{1}.Y(1,1), VEC{1}.Y(end,1), ny);
 [P.X, P.Y] = meshgrid(x, y);
 dx = P.X(1,2) - P.X(1,1);
 dy = P.Y(1,1) - P.Y(2,1);
-clear x y;
+clear nx ny x y;
 
-% Initialize the FTLE data for all times in the time range.
+%% Initialize the FTLE data for all times in the time range.
 FTLE = cell(t(2)-t(1)+1,1);
-for k = 1:length(FTLE)
-    FTLE{k} = struct('C', 1, 'Val', zeros(ny,nx), 'X', P.X, 'Y', P.Y);
+if useXYinAll
+    for k = 1:length(FTLE)
+        FTLE{k} = struct('C', 1, 'Val', 0, 'X', P.X, 'Y', P.Y);
+    end
+else
+    FTLE{1} = struct('C', 1, 'Val', 0, 'X', P.X, 'Y', P.Y);
+    for k = 2:length(FTLE)
+        FTLE{k} = struct('C', 1, 'Val', 0);
+    end
 end
+clear useXYinAll;
 
-% Interpolate the mask onto the finer grid.
-flagM = 0;
-for v = 1:nargin-6
-    if strcmpi(varargin{v}, 'mask')
-        flagM = 1;
-        for k = 1:length(VEC)
-            VEC{k}.C = interp2(VEC{k}.X, VEC{k}.Y, double(VEC{k}.C), ...
-                               P.X, P.Y);
-            VEC{k}.C = logical(VEC{k}.C);
-        end
-        for k = 1:length(FTLE)
-            FTLE{k}.C = VEC{k+t(1)-1}.C;
-        end
-        break
+%% Interpolate the mask onto the finer grid.
+if useMask
+    for k = 1:length(VEC)
+        VEC{k}.C = interp2(VEC{k}.X, VEC{k}.Y, double(VEC{k}.C), P.X, P.Y);
+        VEC{k}.C = logical(floor(VEC{k}.C));
+    end
+    for k = 1:length(FTLE)
+        FTLE{k}.C = VEC{k+t(1)-1}.C;
     end
 end
 
-% Append data for FTLE calculation.
-flagA = 0;
-for v = 1:nargin-6
-    if strcmpi(varargin{v}, 'append')
-        flagA = 1;
-        if strcmpi(dir, 'bwd')
-            VEC = [VEC(end-dt+1:end); VEC];
-            t = t + dt;
-        elseif strcmpi(dir, 'fwd')
-            VEC = [VEC; VEC(1:dt)];
-        end
-        break
+%% Append data for FTLE calculation.
+if useAppend
+    if strcmpi(dir, 'bwd')
+        VEC = [VEC(end-dt+1:end); VEC];
+        t = t + dt;
+    elseif strcmpi(dir, 'fwd')
+        VEC = [VEC; VEC(1:dt)];
     end
 end
 
-if strcmpi(dir, 'bwd') && flagM
+if strcmpi(dir, 'bwd') && useMask
+    %% Calculation of backward FTLE with a mask.
     
-    % Calculation of backward finite-time Lyapunov exponent with a mask.
     for k = t(1):t(2)
-        % Advect the particles from k to k-dt.
+        %% Advect the particles from k to k-dt.
         A = PP_AdvectGrid(P, flipud(VEC(k-dt:k)), -1/freq, 'singlestep');
         
-        % Compute the FTLE field sequentially over the range k-dt to k.
-        CG = cell(dt,1);
-        subFTLE = cell(dt,1);
+        %% Compute the FTLE field sequentially over the range k-dt to k.
         for l = 1:dt
-            CG{l} = PP_DeformGradTensor(A{l+1}, [dx dy], 'EXO2', ...
-                                        VEC{k-l}.C);
-            EGV2 = ones(ny, nx);
-            for i = 1:ny
-                for j = 1:nx
-                    if ~VEC{k-l}.C(i,j)
-                        continue;
-                    else
-                        M = [CG{l}.xx(i,j) CG{l}.xy(i,j);
-                             CG{l}.yx(i,j) CG{l}.yy(i,j)];
-                        if ~max(max(isnan(M)))
-                            EGV2(i,j) = max(eig(M'*M));
-                        else
-                            EGV2(i,j) = NaN;
-                        end
-                    end
-                    
-                end
-            end
-            subFTLE{l} = log(EGV2)/(2*l/freq);
+            
+            % Compute the deformation gradient tensor.
+            DG = PP_DeformGradTensor(A{l+1}, [dx dy], 'EXO2', VEC{k-l}.C);
+            
+            % Compute the elements of the Cauchy-Green strain tensor.
+            CG11 = DG.xx.^2 + DG.yx.^2;
+            CG12 = DG.xx.*DG.xy + DG.yx.*DG.yy;
+            CG22 = DG.xy.^2 + DG.yy.^2;
+            
+            % Compute the largest eigenvalue of the tensor eigensystem.
+            b = CG11 + CG22;
+            c = CG11.*CG22 - CG12.^2;
+            d = sqrt(b.^2 - 4*c);
+            EGV = 0.5*max(b + d, b - d);
+            
+            % Compute the FTLE from the eigenvalue.
+            FTLEnew = log(EGV)/(2*l/freq);
+            
+            % Replace new NaN values with last known FTLE values.
             if l > 1
-                subFTLE{l}(isnan(subFTLE{l})) = ...
-                    subFTLE{l-1}(isnan(subFTLE{l}));
+                FTLEnew(isnan(FTLEnew)) = FTLEold(isnan(FTLEnew));
             else
-                subFTLE{l}(isnan(subFTLE{l})) = 0;
+                FTLEnew(isnan(FTLEnew)) = 0;
             end
+            FTLEold = FTLEnew;
+            
         end
-        FTLE{k-t(1)+1,1}.Val = subFTLE{end};
+        FTLE{k-t(1)+1,1}.Val = FTLEnew;
         
-        if flagA
+        %% Display the time step count.
+        if useAppend
             fprintf('Time Step %d Complete\n', k - dt);
         else
             fprintf('Time Step %d Complete\n', k);
         end
         
     end
-elseif strcmpi(dir, 'bwd') && ~flagM
-    % Calculation of backward finite-time Lyapunov exponent without a mask.
+elseif strcmpi(dir, 'bwd') && ~useMask
+    %% Calculation of backward FTLE without a mask.
+    
     for k = t(1):t(2)
-        % Advect the particles from k to k-dt.
+        %% Advect the particles from k to k-dt.
         A = PP_AdvectGrid(P, flipud(VEC(k-dt:k)), -1/freq, 'singlestep');
         
-        % Compute the FTLE field sequentially over the range k-dt to k.
-        CG = cell(dt,1);
-        subFTLE = cell(dt,1);
+        %% Compute the FTLE field sequentially over the range k-dt to k.
         for l = 1:dt
-            CG{l} = PP_DeformGradTensor(A{l+1}, [dx dy], 'EXO2');
-            EGV2 = ones(ny, nx);
-            for i = 1:ny
-                for j = 1:nx
-                    M = [CG{l}.xx(i,j) CG{l}.xy(i,j);
-                         CG{l}.yx(i,j) CG{l}.yy(i,j)];
-                    if ~max(max(isnan(M)))
-                        EGV2(i,j) = max(eig(M'*M));
-                    else
-                        EGV2(i,j) = NaN;
-                    end
-                end
-            end
-            subFTLE{l} = log(EGV2)/(2*l/freq);
+            
+            % Compute the deformation gradient tensor.
+            DG = PP_DeformGradTensor(A{l+1}, [dx dy], 'EXO2');
+            
+            % Compute the elements of the Cauchy-Green strain tensor.
+            CG11 = DG.xx.^2 + DG.yx.^2;
+            CG12 = DG.xx.*DG.xy + DG.yx.*DG.yy;
+            CG22 = DG.xy.^2 + DG.yy.^2;
+            
+            % Compute the largest eigenvalue of the tensor eigensystem.
+            b = CG11 + CG22;
+            c = CG11.*CG22 - CG12.^2;
+            d = sqrt(b.^2 - 4*c);
+            EGV = 0.5*max(b + d, b - d);
+            
+            % Compute the FTLE from the eigenvalue.
+            FTLEnew = log(EGV)/(2*l/freq);
+            
+            % Replace new NaN values with last known FTLE values.
             if l > 1
-                subFTLE{l}(isnan(subFTLE{l})) = ...
-                    subFTLE{l-1}(isnan(subFTLE{l}));
+                FTLEnew(isnan(FTLEnew)) = FTLEold(isnan(FTLEnew));
             else
-                subFTLE{l}(isnan(subFTLE{l})) = 0;
+                FTLEnew(isnan(FTLEnew)) = 0;
             end
+            FTLEold = FTLEnew;
+            
         end
-        FTLE{k-t(1)+1,1}.Val = subFTLE{end};
-        
-        if flagA
+        FTLE{k-t(1)+1,1}.Val = FTLEnew;
+
+        %% Display the time step count.
+        if useAppend
             fprintf('Time Step %d Complete\n', k - dt);
         else
             fprintf('Time Step %d Complete\n', k);
         end
         
     end
-elseif strcmpi(dir, 'fwd') && flagM
+elseif strcmpi(dir, 'fwd') && useMask
+    %% Calculation of forward FTLE with a mask.
     
-    % Calculation of forward finite-time Lyapunov exponent with a mask.
     for k = t(1):t(2)
-        % Advect the particles from k to k+dt.
+        %% Advect the particles from k to k+dt.
         A = PP_AdvectGrid(P, VEC(k:k+dt), 1/freq, 'singlestep');
         
-        % Compute the FTLE field sequentially over the range k to k+dt.
-        CG = cell(dt,1);
-        subFTLE = cell(dt,1);
+        %% Compute the FTLE field sequentially over the range k to k+dt.
         for l = 1:dt
-            CG{l} = PP_DeformGradTensor(A{l+1}, [dx dy], 'EXO2', ...
-                                        VEC{k+l}.C);
-            EGV2 = ones(ny, nx);
-            for i = 1:ny
-                for j = 1:nx
-                    if ~VEC{k+l}.C(i,j)
-                        continue;
-                    else
-                        M = [CG{l}.xx(i,j) CG{l}.xy(i,j);
-                             CG{l}.yx(i,j) CG{l}.yy(i,j)];
-                        if ~max(max(isnan(M)))
-                            EGV2(i,j) = max(eig(M'*M));
-                        else
-                            EGV2(i,j) = NaN;
-                        end
-                    end
-                    
-                end
-            end
-            subFTLE{l} = log(EGV2)/(2*l/freq);
+            
+            % Compute the deformation gradient tensor.
+            DG = PP_DeformGradTensor(A{l+1}, [dx dy], 'EXO2', VEC{k+l}.C);
+            
+            % Compute the elements of the Cauchy-Green strain tensor.
+            CG11 = DG.xx.^2 + DG.yx.^2;
+            CG12 = DG.xx.*DG.xy + DG.yx.*DG.yy;
+            CG22 = DG.xy.^2 + DG.yy.^2;
+            
+            % Compute the largest eigenvalue of the tensor eigensystem.
+            b = CG11 + CG22;
+            c = CG11.*CG22 - CG12.^2;
+            d = sqrt(b.^2 - 4*c);
+            EGV = 0.5*max(b + d, b - d);
+            
+            % Compute the FTLE from the eigenvalue.
+            FTLEnew = log(EGV)/(2*l/freq);
+            
+            % Replace new NaN values with last known FTLE values.
             if l > 1
-                subFTLE{l}(isnan(subFTLE{l})) = ...
-                    subFTLE{l-1}(isnan(subFTLE{l}));
+                FTLEnew(isnan(FTLEnew)) = FTLEold(isnan(FTLEnew));
             else
-                subFTLE{l}(isnan(subFTLE{l})) = 0;
+                FTLEnew(isnan(FTLEnew)) = 0;
             end
+            FTLEold = FTLEnew;
         end
-        FTLE{k-t(1)+1,1}.Val = subFTLE{end};
+        FTLE{k-t(1)+1,1}.Val = FTLEnew;
         
+        %% Display the time step count.
         fprintf('Time Step %d Complete\n', k);
         
     end
-elseif strcmpi(dir, 'fwd') && ~flagM
+elseif strcmpi(dir, 'fwd') && ~useMask
+    %% Calculation of forward FTLE without a mask.
     
-    % Calculation of forward finite-time Lyapunov exponent without a mask.
     for k = t(1):t(2)
-        % Advect the particles from k to k+dt.
+        %% Advect the particles from k to k+dt.
         A = PP_AdvectGrid(P, VEC(k:k+dt), 1/freq, 'singlestep');
         
-        % Compute the FTLE field sequentially over the range k to k+dt.
-        CG = cell(dt,1);
-        subFTLE = cell(dt,1);
+        %% Compute the FTLE field sequentially over the range k to k+dt.
         for l = 1:dt
-            CG{l} = PP_DeformGradTensor(A{l+1}, [dx dy], 'EXO2');
-            EGV2 = ones(ny, nx);
-            for i = 1:ny
-                for j = 1:nx
-                    M = [CG{l}.xx(i,j) CG{l}.xy(i,j);
-                         CG{l}.yx(i,j) CG{l}.yy(i,j)];
-                    if ~max(max(isnan(M)))
-                        EGV2(i,j) = max(eig(M'*M));
-                    else
-                        EGV2(i,j) = NaN;
-                    end
-                end
-            end
-            subFTLE{l} = log(EGV2)/(2*l/freq);
+            
+            % Compute the deformation gradient tensor.
+            DG = PP_DeformGradTensor(A{l+1}, [dx dy], 'EXO2');
+            
+            % Compute the elements of the Cauchy-Green strain tensor.
+            CG11 = DG.xx.^2 + DG.yx.^2;
+            CG12 = DG.xx.*DG.xy + DG.yx.*DG.yy;
+            CG22 = DG.xy.^2 + DG.yy.^2;
+            
+            % Compute the largest eigenvalue of the tensor eigensystem.
+            b = CG11 + CG22;
+            c = CG11.*CG22 - CG12.^2;
+            d = sqrt(b.^2 - 4*c);
+            EGV = 0.5*max(b + d, b - d);
+            
+            % Compute the FTLE from the eigenvalue.
+            FTLEnew = log(EGV)/(2*l/freq);
+            
+            % Replace new NaN values with last known FTLE values.
             if l > 1
-                subFTLE{l}(isnan(subFTLE{l})) = ...
-                    subFTLE{l-1}(isnan(subFTLE{l}));
+                FTLEnew(isnan(FTLEnew)) = FTLEold(isnan(FTLEnew));
             else
-                subFTLE{l}(isnan(subFTLE{l})) = 0;
+                FTLEnew(isnan(FTLEnew)) = 0;
             end
+            FTLEold = FTLEnew;
         end
-        FTLE{k-t(1)+1,1}.Val = subFTLE{end};
+        FTLE{k-t(1)+1,1}.Val = FTLEnew;
         
+        %% Display the time step count.
         fprintf('Time Step %d Complete\n', k);
         
     end
@@ -357,13 +441,12 @@ end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%
 
-%#ok<*AGROW>
+%#ok<*N/A>
 % Line(s) N/A
 % Message(s)
-% * The variable 'VEC' appears to change size on every loop iteration.
-%   Consider preallocating for speed.
+% * N/A.
 % Reason(s)
-% * This is false since the commands are only executed once.
+% * N/A.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
