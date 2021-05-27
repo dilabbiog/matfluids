@@ -19,6 +19,7 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2021/05/27 -- (GDL) Added simple input parser.                          %
 % 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
 % 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
@@ -133,7 +134,9 @@ function [val] = islogiconum(S)
 % N/A
 
 % Parse the inputs.
-% N/A
+hParser = inputParser;
+addRequired ( hParser, 'S' );
+parse(hParser, S);
 
 % Additional verifications.
 % N/A

@@ -2,9 +2,9 @@
 %                                                                         %
 %                             GENERAL TOOLBOX                             %
 %                                                                         %
-% ischarstr                                                               %
-% Data Type Interrogation                                                 %
-% Examine whether data type is character or string                        %
+% mathdim                                                                 %
+% Array Properties                                                        %
+% Determine the mathematical dimension of an array                        %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -19,9 +19,7 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2021/05/27 -- (GDL) Added simple input parser.                          %
-% 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
-% 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
+% 2021/05/27 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -44,15 +42,18 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% val = ischarstr(S);                                                     %
+% dim = mathdim(A);                                                       %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Examine whether an input has the logical or numeric data type. Returns  %
-% true if either ischar() or isstring() return true.                      %
+% Determine the true mathematical dimension of an array. In other words,  %
+% a scalar will have a dimension of 0, a vector will have a dimension of  %
+% 1 (regardless of which direction its length lies), a matrix will have a %
+% dimension of 2 and so on. For arrays of dimension 2 or greater, the     %
+% mathematical dimension is taken as ndims(squeeze()).                    %
 %                                                                         %
 % Compatibility:                                                          %
-% MATLAB R2019b or later.                                                 %
+% MATLAB R20019b or later.                                                %
 %                                                                         %
 % Dependencies:                                                           %
 % N/A                                                                     %
@@ -66,9 +67,9 @@
 % ======================================================================= %
 % Input Arguments (Required):                                             %
 % ----------------------------------------------------------------------- %
-% 'S'            ANY INPUT                                                %
-%              ~ Input variable. The data type will be examined for       %
-%                whether it is character or string.                       %
+% 'A'            LOGICAL/NUMERIC N-DIMENSIONAL ARRAY                      %
+%              ~ Input array. The mathematical dimension of this array    %
+%                will be determined.                                      %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
@@ -80,52 +81,60 @@
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
-% 'val'          LOGICAL SCALAR                                           %
-%              ~ Output logical scalar. The value will be 1 (true) if the %
-%                input data type is either character or string and 0      %
-%                (false) otherwise.                                       %
+% 'dim'          NONNEGATIVE INTEGER SCALAR                               %
+%              ~ Output scalar. True mathematical dimension of a logical  %
+%                or numeric array, being 0 for a scalar, 1 for a vector,  %
+%                2 for a matrix and so on.                                %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Determine whether the array x = ['a' 'b'; 'c' 'd'] is of character or   %
-% string type.                                                            %
+% Determine the true mathematical dimension of the scalar x = 20.         %
 %                                                                         %
-% >> x   = ['a' 'b'; 'c' 'd'];                                            %
-% >> val = ischarstr(x);                                                  %
-% >> disp(val);                                                           %
-%    1                                                                    %
+% >> x   = 20;                                                            %
+% >> dim = mathdim(x);                                                    %
+% >> disp(dim);                                                           %
+%      0                                                                  %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 2                                                               %
 %                                                                         %
-% Determine whether the array x = ["Hello"; "Goodbye"] is of character or %
-% string type.                                                            %
+% Determine the true mathematical dimension of the array x = [1 2 3].     %
 %                                                                         %
-% >> x   = ["Hello"; "Goodbye"];                                          %
-% >> val = ischarstr(x);                                                  %
-% >> disp(val);                                                           %
-%    1                                                                    %
+% >> x   = [1 2 3];                                                       %
+% >> dim = mathdim(x);                                                    %
+% >> disp(dim);                                                           %
+%      1                                                                  %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 3                                                               %
 %                                                                         %
-% Determine whether the cell array x = {'1' '2' "3"} is of character or   %
-% string type. Verify its elements independently.                         %
+% Determine the true mathematical dimension of the three-dimensional      %
+% array x = permute([1 2 3], [3 1 2]).                                    %
 %                                                                         %
-% >> x   = {'1' '2' "3"};                                                 %
-% >> val = ischarstr(x);                                                  %
-% >> disp(val);                                                           %
-%    0                                                                    %
-% >> disp([ischarstr(x{1}) ischarstr(x{2}) ischarstr(x{3})]);             %
-%    1   1   1                                                            %
+% >> x   = permute([1 2 3], [3 1 2]);                                     %
+% >> dim = mathdim(x);                                                    %
+% >> disp(dim);                                                           %
+%      1                                                                  %
+%                                                                         %
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
+%                                                                         %
+% EXAMPLE 4                                                               %
+%                                                                         %
+% Determine the true mathematical dimension of the four-dimensional array %
+% x = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]).                          %
+%                                                                         %
+% >> x   = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]);                     %
+% >> dim = mathdim(x);                                                    %
+% >> disp(dim);                                                           %
+%      2                                                                  %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [val] = ischarstr(S)
+function [dim] = mathdim(A)
 
 
 %% PARSE INPUTS
@@ -134,21 +143,26 @@ function [val] = ischarstr(S)
 % N/A
 
 % Input checks.
-% N/A
+check.A = @(x) validateattributes(x,                                    ...
+               {'logical', 'numeric'},                                  ...
+               {});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'S' );
-parse(hParser, S);
+addRequired ( hParser, 'A', check.A );
+parse(hParser, A);
+clear check;
 
 % Additional verifications.
 % N/A
 
 
-%% CHARACTER-STRING INTERROGATION
+%% DETERMINE MATHEMATICAL DIMENSION
 
-% (Is character?) OR (Is string?)
-val = ischar(S) | isstring(S);
+if     isscalar(A),          dim = 0;
+elseif isvector(squeeze(A)), dim = 1;
+else,                        dim = ndims(squeeze(A));
+end
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%
