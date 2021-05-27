@@ -2,9 +2,9 @@
 %                                                                         %
 %                             GENERAL TOOLBOX                             %
 %                                                                         %
-% mathdim                                                                 %
-% Array Properties                                                        %
-% Determine the mathematical dimension of an array                        %
+% isno                                                                    %
+% Data Interrogation                                                      %
+% Examine data for a form of "no"                                         %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -42,18 +42,18 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% dim = mathdim(A);                                                       %
+% val = isno(S);                                                          %
+% val = isno(S, 'all');                                                   %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Determine the true mathematical dimension of an array. In other words,  %
-% a scalar will have a dimension of 0, a vector will have a dimension of  %
-% 1 (regardless of which direction its length lies), a matrix will have a %
-% dimension of 2 and so on. For arrays of dimension 2 or greater, the     %
-% mathematical dimension is taken as ndims(squeeze()).                    %
+% Examine whether a character or string input is a form of "no". The      %
+% 'all' option determines whether an entire input string array consists   %
+% only of forms of "no". In the case of a character array, only simple    %
+% words (row vector character arrays) are considered.                     %
 %                                                                         %
 % Compatibility:                                                          %
-% MATLAB R20019b or later.                                                %
+% MATLAB R2019b or later.                                                 %
 %                                                                         %
 % Dependencies:                                                           %
 % N/A                                                                     %
@@ -67,13 +67,19 @@
 % ======================================================================= %
 % Input Arguments (Required):                                             %
 % ----------------------------------------------------------------------- %
-% 'A'            LOGICAL/NUMERIC N-DIMENSIONAL ARRAY                      %
-%              ~ Input array. The mathematical dimension of this array    %
-%                will be determined.                                      %
+% 'S'            CASE-INSENSITIVE CHARACTER/STRING ARRAY                  %
+%              ~ Input array. The elements of this array will be examined %
+%                for a form of "no". The following words will return      %
+%                true:                                                    %
+%                'Laa', 'N', 'Na', 'Nah', 'Nao', 'Nay', 'Ne', 'Nee',      %
+%                'Neen', 'Negative', 'Nei', 'Nein', 'Nej', 'Nem', 'Nie',  %
+%                'No', 'Non', Nope'                                       %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
-% N/A                                                                     %
+% 'all'          CASE-INSENSITIVE CHARACTER ARRAY                         %
+%              ~ Specify 'all' to determine whether the entire input      %
+%                string array consists only of forms of "no".             %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
@@ -81,87 +87,68 @@
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
-% 'dim'          NONNEGATIVE INTEGER SCALAR                               %
-%              ~ Output scalar. True mathematical dimension of a logical  %
-%                or numeric array, being 0 for a scalar, 1 for a vector,  %
-%                2 for a matrix and so on.                                %
+% 'val'          LOGICAL SCALAR                                           %
+%              - Logical answer to whether the interrogated character     %
+%                array or string is a form of "no" (1) or not (0).        %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Determine the true mathematical dimension of the scalar x = 20.         %
+% Add two numbers if a governing variable is set to a form of "no".       %
 %                                                                         %
-% >> x   = 20;                                                            %
-% >> dim = mathdim(x);                                                    %
-% >> disp(dim);                                                           %
-%      0                                                                  %
-%                                                                         %
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
-%                                                                         %
-% EXAMPLE 2                                                               %
-%                                                                         %
-% Determine the true mathematical dimension of the array x = [1 2 3].     %
-%                                                                         %
-% >> x   = [1 2 3];                                                       %
-% >> dim = mathdim(x);                                                    %
-% >> disp(dim);                                                           %
-%      1                                                                  %
-%                                                                         %
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
-%                                                                         %
-% EXAMPLE 3                                                               %
-%                                                                         %
-% Determine the true mathematical dimension of the three-dimensional      %
-% array x = permute([1 2 3], [3 1 2]).                                    %
-%                                                                         %
-% >> x   = permute([1 2 3], [3 1 2]);                                     %
-% >> dim = mathdim(x);                                                    %
-% >> disp(dim);                                                           %
-%      1                                                                  %
-%                                                                         %
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
-%                                                                         %
-% EXAMPLE 4                                                               %
-%                                                                         %
-% Determine the true mathematical dimension of the four-dimensional array %
-% x = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]).                          %
-%                                                                         %
-% >> x   = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]);                     %
-% >> dim = mathdim(x);                                                    %
-% >> disp(dim);                                                           %
-%      2                                                                  %
+% >> someCond = 'N';                                                      %
+% >> if isno(someCond)                                                    %
+%        disp(2 + 5);                                                     %
+%    end                                                                  %
+%      7                                                                  %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [dim] = mathdim(A)
+function [val] = isno(S, varargin)
 
 
 %% PARSE INPUTS
 
 % Input defaults.
-% N/A
+default.all = 0;
 
 % Input checks.
-check.A = @(x) validateattributes(x,                                    ...
-               {'logical', 'numeric'},                                  ...
-               {});
+check.all = @(x) any(validatestring(x, {'all'}));
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'A' , check.A );
-parse(hParser, A);
-clear check;
+addRequired ( hParser, 'S'                             );
+addOptional ( hParser, 'all' , default.all , check.all );
+parse(hParser, S, varargin{:});
+clear check default;
 
 % Additional verifications.
-% N/A
+verify.char = ischar(S) & isrow(S);
 
 
-%% DETERMINE MATHEMATICAL DIMENSION
+%% YES INTERROGATION
 
-if     isscalar(A),          dim = 0;
-elseif isvector(squeeze(A)), dim = 1;
-else,                        dim = ndims(squeeze(A));
+% If the input is not character (row vector) or string, then it cannot be a
+% form of "no".
+if ~(verify.char || isstring(S))
+    val = 0;
+    return;
+end
+clear verify;
+
+% Define words that qualify as a form of "no".
+C = {'Laa', 'N', 'Na', 'Nah', 'Nao', 'Nay', 'Ne', 'Nee', 'Neen',        ...
+     'Negative', 'Nei', 'Nein', 'Nej', 'Nem', 'Nie', 'No', 'Non',       ...
+     'Nope'}.';
+
+% Examine whether the input qualifies as a form of "no".
+val = ismember(lower(S), lower(C));
+clear C;
+
+% Evaluate the 'all' option.
+if hParser.Results.all
+    val = all(val, 'all');
 end
 
 

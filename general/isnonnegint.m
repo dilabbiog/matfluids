@@ -19,6 +19,7 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2021/05/27 -- (GDL) Added 'all' option for all() function.              %
 % 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
 % 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
@@ -235,7 +236,7 @@ val = C{1} | C{2} | C{3};
 
 % Evaluate the 'all' option.
 if hParser.Results.all
-    val = all(val);
+    val = all(val, 'all');
 end
 
 

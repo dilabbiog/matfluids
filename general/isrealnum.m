@@ -19,6 +19,7 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2021/05/27 -- (GDL) Added 'all' option for all() function.              %
 % 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
 % 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
@@ -58,7 +59,7 @@
 % considered to be genuine real numbers.                                  %
 %                                                                         %
 % Compatibility:                                                          %
-% MATLAB R20019b or later.                                                %
+% MATLAB R2019b or later.                                                 %
 %                                                                         %
 % Dependencies:                                                           %
 % N/A                                                                     %
@@ -219,7 +220,7 @@ clear C;
 
 % Evaluate the 'all' option.
 if hParser.Results.all
-    val = all(val);
+    val = all(val, 'all');
 end
 
 
