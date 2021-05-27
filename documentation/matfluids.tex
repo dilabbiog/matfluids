@@ -1,0 +1,315 @@
+\documentclass[10pt, twoside]{book}
+
+\usepackage{matfluids-sty}
+
+\begin{document}
+	
+	\mainmatter
+	
+	\chapter{\label{chp:Convention}Conventions of MAT\textit{fluids}}
+		
+		\section{\label{sec:Common}Fundamental Fluid Dynamics Variables}
+			
+			In fluid dynamics, the pressure $p\left(\mathbf{x},t\right)$ and velocity $\mathbf{u}\left(\mathbf{x},t\right)$ fields of a flow are its most fundamental properties. We learn plenty about the physics of a flow by analyzing these two properties in numerous ways. The coordinate system $\left(\mathbf{x},t\right)$ on which the pressure and velocity fields are described is also critical since this not only affects how we visualize and interpret the flow but also how we analyze it. In this section, we consider the most basic and common of coordinate systems, namely, the rectangular (or Cartesian) system $\mathbf{x} = \left(x, y, z\right)$.
+			
+			\MATfluids\ uses the variable \texttt{coord} to express the coordinate system. The \texttt{coord} variable is a structure array whose fields represent the different coordinate directions. In rectangular coordinates, the fields in the \texttt{coord} variable are \texttt{t}, \texttt{x}, \texttt{y} and \texttt{z}. Each of these field variables are expressed as column vector arrays whose elements increase monotonically with the array index. \MATfluids\ does not, however, impose any restriction on the spacing or discretization used in the coordinate directions. We show an example \texttt{coord} variable in the code snippet below.
+			\begin{code}
+				\\[-8.00pt]
+				\MATcommand\ coord.t = (0:0.1:10).\MATtrans;\\
+				\MATcommand\ coord.x = (0:0.02:1).\MATtrans;\\
+				\MATcommand\ coord.y = [0:0.02:2 2.1:0.1:3].\MATtrans;\\[3.00pt]
+			\end{code}
+			
+			The pressure and velocity fields are respectively represented as \texttt{p} and \texttt{vel} in \MATfluids. The velocity field variable \texttt{vel} is a structure array containing the fields \texttt{u}, \texttt{v} and \texttt{w}, which represent the velocity components in the \texttt{x}, \texttt{y} and \texttt{z} coordinate directions contained in the variable \texttt{coord}, respectively. The pressure and velocity components may be one- to four-dimensional arrays depending on the dimension of the flow data, namely, the number of spatial coordinates being considered and whether the data evolves in time or not.
+			
+			For Eulerian flow variables given by an $n$-dimensional array ($n \in \left\lbrace 1, 2, 3, 4 \right\rbrace$), \MATfluids\ uses the convention that the array indices express the spatial coordinates in order (i.e.,~$x, y, z$) followed by the time coordinate ($t$). For example, given a two-dimensional time-dependent flow defined in the $\left(x,y\right)$ plane, the pressure value \texttt{p(5,2,31)} corresponds to that at the point \texttt{coord.x(5)}, \texttt{coord.y(2)} and \texttt{coord.t(31)}. When plotting a two-dimensional array defined in the $\left(x,y\right)$ plane, we note here that MATLAB instead prefers to have the first array dimension correspond to the $y$ coordinate and the second to $x$. This is the case for all such plotting functions (e.g.,~\texttt{contour}, \texttt{contourf}, \texttt{pcolor}, \texttt{quiver}). Therefore, rather than having the user remember to permute the first and second dimensions when plotting, we offer a set of plotting functions that does this automatically; see Ch.~\ref{chp:Plots}.
+			
+	\chapter{\label{chp:Flows}Flow Toolbox}
+		
+		\section{\label{sec:UniformFlow}Uniform Flow}
+			
+			The most elementary flow that \MATfluids\ incorporates is the case of a uniform flow, namely, one where the magnitude and direction of velocity is constant everywhere. In rectangular coordinates, the potential ($\phi$) and stream ($\psi$) functions for a uniform flow are given by
+			\begin{subequations}
+				\label{eq:UniformFlowDef}
+				\begin{align}
+					\phi\left(x,y\right) &= U_{\infty}\left(x\cos\left(\alpha\right) + y\sin\left(\alpha\right)\right),\label{eq:UniformFlowDefPhi}\\
+					\psi\left(x,y\right) &= U_{\infty}\left(y\cos\left(\alpha\right) - x\sin\left(\alpha\right)\right),\label{eq:UniformFlowDefPsi}
+				\end{align}
+			\end{subequations}
+			where $U_{\infty}$ denotes the constant velocity magnitude of the flow and $\alpha$ the angle of the flow measured counterclockwise from the positive $x$ axis. The corresponding velocity components are therefore given by
+			\begin{subequations}
+				\label{eq:UniformFlowVel}
+				\begin{alignat}{4}
+					u &= \frac{\partial\phi}{\partial x} &&=  &&\frac{\partial\psi}{\partial y} &&= U_{\infty}\cos\left(\alpha\right),\label{eq:UniformFlowVelU}\\
+					v &= \frac{\partial\phi}{\partial y} &&= -&&\frac{\partial\psi}{\partial x} &&= U_{\infty}\sin\left(\alpha\right).\label{eq:UniformFlowVelV}
+				\end{alignat}
+			\end{subequations}
+			Given that the magnitude and direction of velocity is constant everywhere in the flow, the velocity gradient is identically zero ($\nabla\mathbf{u} = \mathbf{0}$).
+			
+			
+			
+		\section{\label{sec:IrrotVortex}The Irrotational (or Potential) Vortex}
+			
+			The irrotational (or potential) vortex is a classical example of a potential flow taught in fundamental fluid dynamics courses. In polar coordinates, its potential and stream functions are defined by
+			\begin{subequations}
+			\label{eq:IrrotVortexDefsPolar}
+				\begin{alignat}{2}
+					\phi\left(r,\theta\right) &=  &&\frac{\Gamma}{2\pi}\theta,\label{eq:IrrotVortexDefsPolarPhi}\\
+					\psi\left(r,\theta\right) &= -&&\frac{\Gamma}{2\pi}\ln\left(r\right),\label{eq:IrrotVortexDefsPolarPsi}
+				\end{alignat}
+			\end{subequations}
+			where $\Gamma$ is the circulation (or strength) of the vortex. The corresponding velocity components in polar coordinates are therefore given by
+			\begin{subequations}
+			\label{eq:IrrotVortexVelPolar}
+				\begin{alignat}{5}
+					u_r &= &&\frac{\partial\phi}{\partial r} &&= \frac{1}{r}&&\frac{\partial\psi}{\partial \theta} &&= 0,\label{eq:IrrotVortexVelPolarUr}\\
+					u_{\theta} &= \frac{1}{r}&&\frac{\partial\phi}{\partial \theta} &&= -&&\frac{\partial\psi}{\partial r} &&= \frac{\Gamma}{2\pi r}.\label{eq:IrrotVortexVelPolarUt}
+				\end{alignat}
+			\end{subequations}
+			In Cartesian coordinates, given that $r^2 = x^2 + y^2$ and $\tan\left(\theta\right) = y/x$, the potential and stream functions can be described as
+			\begin{subequations}
+			\label{eq:IrrotVortexDefs}
+				\begin{alignat}{2}
+					\phi\left(x,y\right) &=  &&\frac{\Gamma}{2\pi}\arctan\left(\frac{y}{x}\right),\label{eq:IrrotVortexDefsPhi}\\
+					\psi\left(x,y\right) &= -&&\frac{\Gamma}{4\pi}\ln\left(x^2 + y^2\right),\label{eq:IrrotVortexDefsPsi}
+				\end{alignat}
+			\end{subequations}
+			where it should be understood that the `$\arctan$' in Eq.~(\ref{eq:IrrotVortexDefsPhi}) ought to return an angle respecting a chosen polar coordinate system (e.g., often either between $-\pi$ and $\pi$ or between $0$ and $2\pi$). For these purposes, it is useful to use the \texttt{atan2} function (the four-quadrant inverse tangent) available in most programming languages (including MATLAB), which considers the sign of $x$ and $y$ and returns an angle between $-\pi$ and $\pi$. The corresponding velocity components in Cartesian coordinates are given by
+			\begin{subequations}
+				\label{eq:IrrotVortexVel}
+				\begin{alignat}{2}
+					u &= -&&\frac{\Gamma}{2\pi}\frac{y}{x^2 + y^2},\label{eq:IrrotVortexVelPolarU}\\
+					v &=  &&\frac{\Gamma}{2\pi}\frac{x}{x^2 + y^2}.\label{eq:IrrotVortexVelPolarV}
+				\end{alignat}
+			\end{subequations}
+			The components of the velocity gradient tensor are then given by
+			\begin{subequations}
+			\label{eq:IrrotVortexVgt}
+				\begin{alignat}{2}
+					\frac{\partial u}{\partial x} &= &&\frac{\Gamma}{2\pi}\left(\frac{2xy}{\left(x^2 + y^2\right)^2}\right),\label{eq:IrrotVortexVgtUx}\\
+					\frac{\partial u}{\partial y} &= -&&\frac{\Gamma}{2\pi}\left(\frac{1}{x^2 + y^2} - \frac{y^2}{\left(x^2 + y^2\right)^2}\right),\label{eq:IrrotVortexVgtUy}\\
+					\frac{\partial v}{\partial x} &= &&\frac{\Gamma}{2\pi}\left(\frac{1}{x^2 + y^2} - \frac{x^2}{\left(x^2 + y^2\right)^2}\right),\label{eq:IrrotVortexVgtVx}\\
+					\frac{\partial v}{\partial y} &= -&&\frac{\Gamma}{2\pi}\left(\frac{2xy}{\left(x^2 + y^2\right)^2}\right).\label{eq:IrrotVortexVgtVy}
+				\end{alignat}
+			\end{subequations}
+			
+			
+			In \MATfluids, an irrotational vortex can be defined using the \texttt{irrotVortex} function. For example,
+			\begin{lstlisting}[%
+				style           = Matlab-editor,
+				basicstyle      = \mlttfamily,
+				autogobble      = true,
+				backgroundcolor = \color{Snow2},
+				escapechar      = `
+				]
+				`\\[-4.75ex]`
+				`\MATcommand` coord.x = linspace(-1, 1, 51).';
+				`\MATcommand` coord.y = coord.x;
+				`\MATcommand` gamma = 1;
+				`\MATcommand` [vel,vgt] = irrotVortex(coord, gamma);
+			\end{lstlisting}
+			
+		\section{\label{sec:RotVortex}The Rotational (or Solid Body) Vortex}
+			
+			Although solid body rotation cannot be associated with a potential function (i.e., it is not a potential flow), it can be associated with the stream function
+			\begin{equation}
+			\label{eq:RotVortexStreamPol}
+				\psi\left(r,\theta\right) = -\frac{1}{2}\Omega r^2,
+			\end{equation}
+			where $\Omega$ represents the rate of rotation of the vortex.
+			
+		\section{\label{sec:DoubleGyre}A Simple Analytical Double Gyre Model}
+			
+			\citet{Shadden05} described a simple analytical model of a double gyre flow. As the authors state, the model should not be seen as an approximate solution to a real fluid flow. The model should simply be interpreted as a simplified flow pattern that resembles the double gyre patterns seen in geophysical flows, such in \citet{Coulliette07}, and captures some salient features present in more complex models, such as that of \citet{Coulliette00,Coulliette01}.
+			
+			The stream function of the double gyre model, as defined by \citet{Shadden05}, is given by
+			\begin{equation}
+			\label{eq:DoubleGyreStream}
+				\psi\left(x,y,t\right) = -A\sin\left({\pi}f\left(x,t\right)\right)\sin\left({\pi}y\right),
+			\end{equation}
+			where
+			\begin{subequations}
+			\label{eq:DoubleGyreStreamDefs}
+				\begin{align}
+					f\left(x,t\right) &= a\left(t\right)x^2 + b\left(t\right)x;\label{eq:DoubleGyreStreamDefs1}\\
+					a\left(t\right)   &= \epsilon\sin\left({\omega}t\right),\label{eq:DoubleGyreStreamDefs2}\\
+					b\left(t\right)   &= 1 - 2\epsilon\sin\left({\omega}t\right).\label{eq:DoubleGyreStreamDefs3}
+				\end{align}
+			\end{subequations}
+			The corresponding velocity components are therefore given by
+			\begin{subequations}
+			\label{eq:DoubleGyreVel}
+				\begin{align}
+					u = \frac{\partial\psi}{\partial y} &= -A\pi\sin\left({\pi}f\left(x,t\right)\right)\cos\left({\pi}y\right),\label{eq:DoubleGyreVelU}\\
+					v = -\frac{\partial\psi}{\partial x} &= A\pi\frac{\partial f}{\partial x}\cos\left({\pi}f\left(x,t\right)\right)\sin\left({\pi}y\right)\label{eq:DoubleGyreVelV}
+				\end{align}
+			\end{subequations}
+			where, of course,
+			\begin{equation}
+			\label{eq:DoubleGyreStreamdfdx}
+				\frac{\partial f}{\partial x} = 2a\left(t\right)x + b\left(t\right).
+			\end{equation}
+			Note that in geophysical flows, the sign convention used in Eqs.~(\ref{eq:DoubleGyreVelU}) and (\ref{eq:DoubleGyreVelV}) is often the opposite, namely, $u = -\partial\psi/{\partial}y$ and $v = \partial\psi/{\partial}x$. If this is the convention you wish to use, the sign of the stream function in Eq.~(\ref{eq:DoubleGyreStream}) should also be changed for consistency. The resulting velocity field satisfies continuity by construction and therefore can be a useful tool to validate many concepts and codes in post-processing. For example, the components of the velocity gradient tensor are easily obtained from the derivatives of the velocity field, i.e.,
+			\begin{subequations}
+			\label{eq:DoubleGyreVgt}
+				\begin{align}
+					\frac{\partial u}{\partial x} &= -A\pi^2\frac{\partial f}{\partial x}\cos\left({\pi}f\left(x,t\right)\right)\cos\left({\pi}y\right)\label{eq:DoubleGyreVgtUx}\\
+					\frac{\partial u}{\partial y} &= A\pi^2\sin\left({\pi}f\left(x,t\right)\right)\sin\left({\pi}y\right)\label{eq:DoubleGyreVgtUy}\\
+					\frac{\partial v}{\partial x} &= A\pi\sin\left({\pi}y\right)\left[\frac{\partial^2 f}{\partial x^2}\cos\left({\pi}f\left(x,t\right)\right) - \pi\left(\frac{\partial f}{\partial x}\right)^2\sin\left({\pi}f\left(x,t\right)\right)\right]\label{eq:DoubleGyreVgtVx}\\
+					\frac{\partial v}{\partial y} &= A\pi^2\frac{\partial f}{\partial x}\cos\left({\pi}f\left(x,t\right)\right)\cos\left({\pi}y\right).\label{eq:DoubleGyreVgtVy}
+				\end{align}
+			\end{subequations}
+			
+	\chapter{\label{chp:Plots}Plot Toolbox}
+		
+	\chapter{\label{chp:DerivSchemes}Derivative Schemes}
+		
+		In the case of analytical flows, obtaining various physical quantities, such as vorticity and strain rate, is generally an exercise in computing derivatives of the velocity field. However, in the case of data generated by numerical simulations or experimental measurements, the derivatives must be computed from the data points. \MATfluids\ uses various schemes to achieve this. Due to the number of included derivative estimation functions, a nomenclature was devised that make the properties of the scheme evident. For example, a derivative estimation function may have the name \texttt{FDO2ExD1uCtr}. The first two characters denote the underlying method, where `\texttt{FD}' in the example refers to `finite differences'. The second two characters denote the order of the scheme being used with an `\texttt{O}' followed by a number representing the order (i.e., the example function represents a second-order scheme). The following two characters denote the nature of the method, namely, whether it is explicit `\texttt{Ex}' or implicit `\texttt{Im}'. The next three characters represent the order of the derivative being approximated (i.e., a `\texttt{D}' followed by a number representing the order) as well as whether the grid is uniform `\texttt{u}' or variable `\texttt{v}'. Any remaining characters are intended to provide additional information, such as `\texttt{Ctr}' in the example suggesting that a centred scheme is primarily used.
+		
+		A wide range of finite difference schemes can be derived using multiple Taylor series expansions centred at a point of interest. For instance, say we wish to compute derivatives of some dependent variable $f$ with respect to some independent variable $x$ numerically. If we are interested in the derivative at any particular point $x_j$ (assume for the moment a uniform discretization of size ${\Delta}x$), we can express the value of $f$ at $x_{j+n}$ using a Taylor series expansion centred at $x_{j}$ as
+		\begin{equation}
+		\label{eq:TaylorPointsFwd}
+			f\left(x_{j+n}\right) = f\left(x_j\right) + n{\Delta}x\left.\frac{\partial f}{\partial x}\right|_j + \frac{\left(n{\Delta}x\right)^2}{2!}\left.\frac{\partial^2 f}{\partial x^2}\right|_j + \frac{\left(n{\Delta}x\right)^3}{3!}\left.\frac{\partial^3 f}{\partial x^3}\right|_j + \cdots
+		\end{equation}
+		and, likewise, for the value of $f$ at $x_{j-n}$ this amounts to
+		\begin{equation}
+		\label{eq:TaylorPointsBwd}
+			f\left(x_{j-n}\right) = f\left(x_j\right) - n{\Delta}x\left.\frac{\partial f}{\partial x}\right|_j + \frac{\left(n{\Delta}x\right)^2}{2!}\left.\frac{\partial^2 f}{\partial x^2}\right|_j - \frac{\left(n{\Delta}x\right)^3}{3!}\left.\frac{\partial^3 f}{\partial x^3}\right|_j + \cdots.
+		\end{equation}
+		Although it may get tedious, by combining several expressions like Eqs.~(\ref{eq:TaylorPointsFwd}) and (\ref{eq:TaylorPointsBwd}), a scheme can be derived that is accurate up to some order of truncation error.
+		
+		\section{\label{sec:Order2FD}Second-Order Explicit Schemes}
+			
+			\subsection{\label{sec:O2FDD1}Estimation of First Derivatives}
+				
+				Perhaps the most common derivative schemes used in post-processing, at least as a first attempt, are the second-order schemes. For points that share a neighbour on each side, the second-order centred scheme often provides a good derivative estimation and is given by
+				\begin{equation}
+				\label{eq:SecondOrderCentreD1}
+					\left.\frac{\partial f}{\partial x}\right|_j = \frac{f\left(x_{j+1}\right) - f\left(x_{j-1}\right)}{2{\Delta}x} + O\left({\Delta}x^2\right),
+				\end{equation}
+				which can be derived by subtracting Eq.~(\ref{eq:TaylorPointsBwd}) from Eq.~(\ref{eq:TaylorPointsFwd}), both with $n = 1$, and solving for $\partial f/\partial x$. Unfortunately, points that lie at a boundary of some sort will not have neighbouring points on each side and therefore the second-order centred scheme will not work, at least not without some added condition (e.g., periodicity or symmetry of the domain at the boundary). In such a case, if there are two points ahead of the boundary node, a second-order forward scheme can be used,
+				\begin{equation}
+				\label{eq:SecondOrderFwdD1}
+					\left.\frac{\partial f}{\partial x}\right|_j = \frac{-3f\left(x_{j}\right) + 4f\left(x_{j+1}\right) - f\left(x_{j+2}\right)}{2{\Delta}x} + O\left({\Delta}x^2\right),
+				\end{equation}
+				and if there are two points behind the boundary node, a second-order forward scheme can be used, namely,
+				\begin{equation}
+				\label{eq:SecondOrderBwdD1}
+					\left.\frac{\partial f}{\partial x}\right|_j = \frac{3f\left(x_{j}\right) - 4f\left(x_{j-1}\right) + f\left(x_{j-2}\right)}{2{\Delta}x} + O\left({\Delta}x^2\right).
+				\end{equation}
+				
+				In \MATfluids, a complete second-order scheme is included in \texttt{FDO2ExD1uCtr}, which primarily uses the second-order centred scheme of Eq.~(\ref{eq:SecondOrderCentreD1}) along with the forward and backward differences of Eqs.~(\ref{eq:SecondOrderFwdD1}) and (\ref{eq:SecondOrderBwdD1}) only at the boundaries. As a measure of the accuracy of the method, let's use the potential vortex defined below.
+				\begin{code}
+					>> coord.x = linspace(-1, 1, 51).';\\
+					>> coord.y = coord.x;\\
+					>> gamma = 1;\\
+					>> [vel,vgt] = irrotVortex(coord, gamma);
+				\end{code}
+				Now, let's compute the derivatives of the velocity field `\texttt{vel}' using the \texttt{FDO2ExD1uCtr} function and verify the accuracy against the analytical derivatives contained in `\texttt{vgt}'.
+				\begin{code}
+					>> ds = coord.x(2) - coord.x(1);\\
+					>> ux = FDO2ExD1uCtr(vel.u, ds, 2);\\
+					>> uy = FDO2ExD1uCtr(vel.u, ds, 1);\\
+					>> vx = FDO2ExD1uCtr(vel.v, ds, 2);\\
+					>> vy = FDO2ExD1uCtr(vel.v, ds, 1);\\
+					>> sqrt(sum((vgt.ux - ux).\char`\^2, `all', `omitnan')/numel(vgt.ux)) \\
+					ans =\\
+					\hspace{22pt}0.2232 \\
+					>> sqrt(sum((vgt.uy - uy).\char`\^2, `all', `omitnan')/numel(vgt.uy)) \\
+					ans =\\
+					\hspace{22pt}0.8057 \\
+					>> sqrt(sum((vgt.vx - vx).\char`\^2, `all', `omitnan')/numel(vgt.vx)) \\
+					ans =\\
+					\hspace{22pt}0.8057 \\
+					>> sqrt(sum((vgt.vy - vy).\char`\^2, `all', `omitnan')/numel(vgt.vy)) \\
+					ans =\\
+					\hspace{22pt}0.2232
+				\end{code}
+				
+	\chapter{\label{chp:MATLABpointers}Efficient MATLAB Code}
+		
+		In general, in scientific programming, we often strive to write a code in the simplest and most elegant way possible. Fortunately, MATLAB has many capabilities and functions that allow us to achieve this goal and a proper understanding of them can lead to pretty efficient codes.
+		
+		\section{\label{sec:LoopsChecks}Loops and Test Statements}
+			
+		\section{\label{sec:OperationOrder}Order of Mathematical Operations}
+			
+			The order in which mathematical operations are executed in a code can have a huge impact on the efficiency of a code. Consider the following simple code:
+			\begin{lstlisting}[%
+				style           = Matlab-editor,
+				basicstyle      = \mlttfamily,
+				autogobble      = true,
+				backgroundcolor = \color{Snow2},
+				escapechar      = `
+			]
+				`\\[-4.75ex]`
+				`\MATcommand` n = 10000;
+				`\MATcommand` x = rand(n, 1);
+				`\MATcommand` A = rand(n, 10);
+				`\MATcommand` tic; B = A`\MATtimes`A'`\MATtimes`x; toc;
+				`\MATnull`Elapsed time is 0.371698 seconds.
+				`\MATcommand` tic; C = A`\MATtimes`(A'`\MATtimes`x); toc;
+				`\MATnull`Elapsed time is 0.000251 seconds.
+			\end{lstlisting}
+			
+		\section{\label{sec:MatrixProducts}Low-Memory Matrix Products}
+			
+			When dealing with large datasets, it is important to understand different ways of dealing with matrix products, particularly when at least one of the matrices is so large that it needs to be partitioned and stored in multiple files. Given an $p \times n$ matrix $\mathbf{X}$, two of the simplest and particularly useful partitions we could use are columnwise and rowwise partitions, i.e.,
+			\begin{equation}
+			\label{eq:MatrixColumnPartitionX}
+				\mathbf{X} =
+				\begin{bmatrix}
+					\mid         &        & \mid         \\
+					\mathbf{x}_1 & \cdots & \mathbf{x}_n \\
+					\mid         &        & \mid
+				\end{bmatrix}
+				=
+				\begin{bmatrix}
+					\leftmidh & \widetilde{\mathbf{x}}_1 & \rightmidh \\
+					          & \vdots       &            \\
+					\leftmidh & \widetilde{\mathbf{x}}_p & \rightmidh
+				\end{bmatrix}.
+			\end{equation}
+			Say we have another $n \times q$ matrix
+			\begin{equation}
+			\label{eq:MatrixColumnPartitionY}
+				\mathbf{Y} =
+				\begin{bmatrix}
+					\mid         &        & \mid         \\
+					\mathbf{y}_1 & \cdots & \mathbf{y}_q \\
+					\mid         &        & \mid
+				\end{bmatrix}
+				=
+				\begin{bmatrix}
+					\leftmidh & \widetilde{\mathbf{y}}_1 & \rightmidh \\
+					          & \vdots                   &            \\
+					\leftmidh & \widetilde{\mathbf{y}}_n & \rightmidh
+				\end{bmatrix},
+			\end{equation}
+			and we are interested in the product $\mathbf{A} = \mathbf{X}\mathbf{Y}$. If $q \gg \max\left(p,n\right)$, a particularly useful way of representing the product is
+			\begin{equation}
+			\label{eq:MatrixProduct1}
+				\mathbf{A} =
+				\begin{bmatrix}
+					\mid                   &        & \mid                   \\
+					\mathbf{X}\mathbf{y}_1 & \cdots & \mathbf{X}\mathbf{y}_q \\
+					\mid                   &        & \mid
+				\end{bmatrix},
+			\end{equation}
+			the reason being that if the matrix $\mathbf{X}$ can be held in memory, then the matrix $\mathbf{A}$ can be computed column by column by loading successive columns of $\mathbf{Y}$ (i.e., $\mathbf{a}_j = \mathbf{X}\mathbf{y}_j$). If the matrix $\mathbf{Y}$ is stored in groups of columns, then the matrix $\mathbf{A}$ can also be computed in groups of columns  (i.e., $\mathbf{A}_{j_1}^{j_2} = \mathbf{X}\mathbf{Y}_{j_1}^{j_2}$). If instead $p \gg \max\left(q,n\right)$, it is more useful to represent the product as
+			\begin{equation}
+			\label{eq:MatrixProduct2}
+				\mathbf{A} =
+				\begin{bmatrix}
+					\mid                   &        & \mid                   \\
+					\mathbf{X}\mathbf{y}_1 & \cdots & \mathbf{X}\mathbf{y}_q \\
+					\mid                   &        & \mid
+				\end{bmatrix}.
+			\end{equation}
+			
+	\backmatter
+	
+	\bibliographystyle{apacite}
+	\bibliography{matfluids-bib}
+	
+\end{document}

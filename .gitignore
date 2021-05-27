@@ -1,0 +1,10 @@
+# Ignore LaTeX compilation files.
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.gz
+
+# Ignore figure creation files.
+*.svg
