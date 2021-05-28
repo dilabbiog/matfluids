@@ -19,6 +19,7 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2021/05/27 -- (GDL) Corrected real tolerance, ensures isposreal(0) = 0. %
 % 2021/05/27 -- (GDL) Added 'all' option for all() function.              %
 % 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
 % 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
@@ -228,7 +229,7 @@ C{2} =  hParser.Results.nan                                             ...
 % (Not Inf?) AND (Not NaN?) AND (Is +?) AND (No Im?)
 C{3} = ~isinf(real(S))                                                  ...
      & ~isnan(real(S))                                                  ...
-     & (real(S) >= hParser.Results.tolRe)                               ...
+     & (real(S) > hParser.Results.tolRe)                                ...
      & (abs(imag(S)) <= hParser.Results.tolIm);
 
 % (+Inf?) OR (NaN?) OR (Positive Real?)

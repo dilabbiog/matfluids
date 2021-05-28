@@ -2,9 +2,9 @@
 %                                                                         %
 %                             GENERAL TOOLBOX                             %
 %                                                                         %
-% isyes                                                                   %
+% isthru                                                                  %
 % Data Interrogation                                                      %
-% Examine data for a form of "yes"                                        %
+% Examine data for a type through cells and structs.                      %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -42,15 +42,11 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% val = isyes(S);                                                         %
-% val = isyes(S, 'all');                                                  %
+% val = isthru(S, @fun);                                                  %
+% val = isthru(___, Option, Name, Value);                                 %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Examine whether a character or string input is a form of "yes". The     %
-% 'all' option determines whether an entire input string array consists   %
-% only of forms of "yes". In the case of a character array, only simple   %
-% words (row vector character arrays) are considered.                     %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -67,89 +63,132 @@
 % ======================================================================= %
 % Input Arguments (Required):                                             %
 % ----------------------------------------------------------------------- %
-% 'S'            CASE-INSENSITIVE CHARACTER/STRING ARRAY                  %
+% 'fun'          FUNCTION HANDLE                                          %
+%              ~ Function handle of data type interrogator. For example,  %
+%                this could be @isint, @isnumeric, @isposreal, @isstring, %
+%                @isyes, etc.                                             %
+% ----------------------------------------------------------------------- %
+% 'S'            N-DIMENSIONAL CELL/STRUCT/NUMERIC ARRAY                  %
 %              ~ Input array. The elements of this array will be examined %
-%                for a form of "yes". The following words will return     %
-%                true:                                                    %
-%                'Baleh', 'Da', 'Etiam', 'Go', 'Hai', 'Ja', 'K', 'Naam',  %
-%                'Ok', 'Okay', 'Oui', 'Please', 'Positive', 'Si', 'Sim',  %
-%                'Sure', 'True', 'Y', 'Ya', 'Yay', 'Ye', 'Yeah', 'Yeh',   %
-%                'Yes', 'Yup'                                             %
+%                for genuine integers. Data types that are not logical or %
+%                numeric are accepted, but will return zero.              %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
-% 'all'          CASE-INSENSITIVE CHARACTER ARRAY                         %
-%              ~ Specify 'all' to determine whether the entire input      %
-%                string array consists only of forms of "yes".            %
+% N/A            N/A                                                      %
+%              ~ The valid options depend on the data type interrogator   %
+%                specified by 'fun'.                                      %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
-% N/A                                                                     %
+% N/A            N/A                                                      %
+%              ~ The valid name-value pairs depend on the data type       %
+%                interrogator specified by 'fun'.                         %
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
-% 'val'          LOGICAL SCALAR                                           %
-%              ~ Logical answer to whether the interrogated character     %
-%                array or string is a form of "yes" (1) or not (0).       %
+% 'val'          LOGICAL N-DIMENSIONAL CELL/STRUCT/NUMERIC ARRAY/SCALAR   %
+%              ~ Output array. The elements of this array address whether %
+%                the elements of the input array are of the specified     %
+%                data type (1) or not (0).                                %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Add two numbers if a governing variable is set to a form of "yes".      %
+% Create a variable x that consists of nested cell arrays and structs     %
+% whose elements are ultimately arrays of some sort (character, numeric,  %
+% etc.). Determine whether the elements are positive real.                %
 %                                                                         %
-% >> someCond = 'Y';                                                      %
-% >> if isyes(someCond)                                                   %
-%        disp(2 + 5);                                                     %
-%    end                                                                  %
-%      7                                                                  %
+% >> x      = cell(3,2);                                                  %
+% >> x{1,1} = struct('a', [1 2; -1 -2], 'b', ['a' 'b' 'c']);              %
+% >> x{2,1} = [-2.22 -Inf NaN; Inf 10^-7 2];                              %
+% >> x{3,1} = ["Hello" "Goodbye"]';                                       %
+% >> x{1,2} = struct('d', {[5 4 3; -2 1 0]; pi/2}, 'e', {-2; 20});        %
+% >> x{2,2} = "Another cell!";                                            %
+% >> x{3,2} = -0.01;                                                      %
+% >> val    = isthru(x, @isposreal);                                      %
+% >> disp(val{1,1}.a);                                                    %
+%    1   1                                                                %
+%    0   0                                                                %
+% >> disp(val{1,1}.b);                                                    %
+%      0                                                                  %
+% >> disp(val{1,2}(1,1).d);                                               %
+%    1   1   1                                                            %
+%    0   1   0                                                            %
+% >> disp(val{1,2}(2,1).d);                                               %
+%    1                                                                    %
+% >> disp(val{1,2}(1,1).e);                                               %
+%    0                                                                    %
+% >> disp(val{1,2}(2,1).e);                                               %
+%    1                                                                    %
+% >> disp(val{2,1});                                                      %
+%    0   0   1                                                            %
+%    1   1   1                                                            %
+% >> disp(val{2,2});                                                      %
+%      0                                                                  %
+% >> disp(val{3,1});                                                      %
+%      0                                                                  %
+% >> disp(val{3,2});                                                      %
+%      0                                                                  %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-function [val] = isyes(S, varargin)
+function [val] = isthru(S, fun, varargin)
 
 
 %% PARSE INPUTS
 
 % Input defaults.
-default.all = 0;
+% N/A
 
 % Input checks.
-check.all = @(x) any(validatestring(x, {'all'}));
+check.fun = @(x) validateattributes(x,                                  ...
+                 {'function_handle'},                                   ...
+                 {});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'S'                             );
-addOptional ( hParser, 'all' , default.all , check.all );
-parse(hParser, S, varargin{:});
+addRequired ( hParser, 'S'               );
+addRequired ( hParser, 'fun' , check.fun );
+parse(hParser, S, fun, varargin{:});
 clear check default;
 
 % Additional verifications.
-verify.char = ischar(S) & isrow(S);
+% N/A
 
 
-%% YES INTERROGATION
+%% DATA TYPE INTERROGATION
 
-% If the input is not character (row vector) or string, then it cannot be a
-% form of "yes".
-if ~(verify.char || isstring(S))
-    val = 0;
-    return;
+% Determine the variable type of 'S'.
+if ischar(S) || islogical(S) || isnumeric(S) || isstring(S)
+    type = 'array';
+elseif isstruct(S)
+    type = 'struct';
+elseif iscell(S)
+    type = 'cell';
 end
-clear verify;
 
-% Define words that qualify as a form of "yes".
-C = {'Baleh', 'Da', 'Etiam', 'Go', 'Hai', 'Ja', 'K', 'Naam', 'Ok',      ...
-     'Okay', 'Oui', 'Please', 'Positive', 'Si', 'Sim', 'Sure', 'True',  ...
-     'True', 'Y', 'Ya', 'Yay', 'Ye', 'Yeah', 'Yeh', 'Yes', 'Yup'}.';
-
-% Examine whether the input qualifies as a form of "yes".
-val = ismember(lower(S), lower(C));
-clear C;
-
-% Evaluate the 'all' option.
-if hParser.Results.all
-    val = all(val, 'all');
+% Apply the interrogation function.
+switch type
+    case 'array'
+        val = fun(S, varargin{:});
+    case 'cell'
+        val = cell(size(S));
+        for k = 1:numel(S)
+            val{ind2sub(size(S),k)}                                     ...
+                = isthru(S{ind2sub(size(S),k)}, fun, varargin{:});
+        end
+    case 'struct'
+        fields = fieldnames(S);
+        val = cell2struct(cell(length(fields),1),fields);
+        val = repmat(val, size(S));
+        for k1 = 1:numel(S)
+            for k2 = 1:length(fields)
+                val(ind2sub(size(S),k1)).(fields{k2})                   ...
+                    = isthru(S(ind2sub(size(S),k1)).(fields{k2}), fun,  ...
+                             varargin{:});
+            end
+        end
 end
 
 

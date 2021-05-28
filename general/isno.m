@@ -88,7 +88,7 @@
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
 % 'val'          LOGICAL SCALAR                                           %
-%              - Logical answer to whether the interrogated character     %
+%              ~ Logical answer to whether the interrogated character     %
 %                array or string is a form of "no" (1) or not (0).        %
 % ======================================================================= %
 %                                                                         %
