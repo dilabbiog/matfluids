@@ -2,9 +2,9 @@
 %                                                                         %
 %                             GENERAL TOOLBOX                             %
 %                                                                         %
-% examineVel                                                              %
+% examineFlowData                                                         %
 % MATfluids Structure Interrogation                                       %
-% Examine contents of velocity field structure                            %
+% Examine contents of both the coordinate and velocity field structures   %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -19,7 +19,7 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2021/06/06 -- (GDL) Beta version of the code finalized.                 %
+% 2021/06/05 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -48,18 +48,24 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% examineVel(vel);                                                        %
+% examineFlowData(coord, vel);                                            %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Examine whether a velocity field structure is properly formatted for    %
-% MATfluids. The function has no specific output, it will simply throw an %
-% error if the velocity field structure is not correctly formatted.       %
+% Examine whether the coordinate and velocity field structures are        %
+% properly formatted for MATfluids. The function has no specific output,  %
+% it will simply throw an error if either the coordinate or velocity      %
+% field structures is not correctly formatted, or if their sizes are      %
+% incompatible.                                                           %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
 %                                                                         %
 % Dependencies:                                                           %
+% examineCoord                                                            %
+% examineVel                                                              %
+% isnegreal                                                               %
+% isposreal                                                               %
 % isrealnum                                                               %
 %                                                                         %
 % Acknowledgments:                                                        %
@@ -70,6 +76,21 @@
 %                                                                         %
 % ======================================================================= %
 % Input Arguments (Required):                                             %
+% ----------------------------------------------------------------------- %
+% 'coord'        STRUCT ARRAY (1 X 1)                                     %
+%              ~ Coordinates. The structure array may contain the         %
+%                following fields:                                        %
+%                1) coord.x representing the space coordinate x;          %
+%                2) coord.y representing the space coordinate y;          %
+%                3) coord.z representing the space coordinate z;          %
+%                4) coord.t representing the time coordinate t.           %
+%                Each field is a column vector (one-dimensional array)    %
+%                that strictly increases/decreases monotonically from the %
+%                first row to the last. Not all fields need be present in %
+%                the coordinate structure, however the order must follow  %
+%                [x y z t]. For example, the coordinate structure may     %
+%                contain fields ordered as [x z t] but not as [t x z].    %
+%                Both empty and scalar arrays are permitted.              %
 % ----------------------------------------------------------------------- %
 % 'vel'          STRUCT ARRAY (1 X 1)                                     %
 %              ~ Velocity field. The structure array may contain the      %
@@ -101,54 +122,70 @@
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Determine whether the elements of the following velocity field          %
-% structure is correct for MATfluids.                                     %
+% Determine whether the following coordinate and velocity field           %
+% structures are correct for MATfluids.                                   %
 %                                                                         %
-% >> clear vel;                                                           %
-% >> vel.u = 1;                                                           %
-% >> vel.v = [1 2 3; 4 5 6; 7 8 9];                                       %
-% >> vel.w = [1 2 1; 2 1 2; 1 2 1];                                       %
-% >> examineVel(vel);                                                     %
+% >> clear coord vel;                                                     %
+% >> coord.x = (-10:0.1:10).';                                            %
+% >> coord.y = (0:0.1:5).';                                               %
+% >> coord.t = (0:0.1:2).';                                               %
+% >> vel.u   = 2;                                                         %
+% >> vel.v   = rand(length(coord.x), length(coord.y), length(coord.t));   %
+% >> examineFlowData(coord, vel);                                         %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 2                                                               %
 %                                                                         %
-% >> clear vel;                                                           %
-% >> vel.u = [-1 1; -2 2];                                                %
-% >> vel.v = [1 2 3; 4 5 6; 7 8 9];                                       %
-% >> vel.w = [];                                                          %
-% >> examineVel(vel);                                                     %
-% Error using examineVel (line 242)                                       %
-% At least one field in the velocity field structure has a different      %
-% array size than the others.                                             %
+% Determine whether the following coordinate and velocity field           %
+% structures are correct for MATfluids.                                   %
+%                                                                         %
+% >> clear coord vel;                                                     %
+% >> coord.x = (-2:0.05:2).';                                             %
+% >> coord.z = (0:0.1:1).';                                               %
+% >> coord.t = (0:0.01:1).';                                              %
+% >> vel.u   = rand(length(coord.x), length(coord.z), length(coord.t));   %
+% >> vel.v   = [];                                                        %
+% >> vel.w   = rand(length(coord.x), length(coord.z), length(coord.t));   %
+% >> examineFlowData(coord, vel);                                         %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 3                                                               %
 %                                                                         %
-% >> clear vel;                                                           %
-% >> vel.u = [-1 1; -2 2];                                                %
-% >> vel.v = [1 2; 3 4];                                                  %
-% >> vel.w = [];                                                          %
-% >> examineVel(vel);                                                     %
+% Determine whether the following coordinate and velocity field           %
+% structures are correct for MATfluids.                                   %
+%                                                                         %
+% >> clear coord vel;                                                     %
+% >> coord.x = (-2:0.05:2).';                                             %
+% >> coord.y = 1;                                                         %
+% >> coord.z = (0:0.1:1).';                                               %
+% >> coord.t = (0:0.01:1).';                                              %
+% >> vel.u   = rand(length(coord.x), length(coord.z), length(coord.t));   %
+% >> vel.w   = rand(length(coord.x), length(coord.z), length(coord.t));   %
+% >> examineFlowData(coord, vel);                                         %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 4                                                               %
 %                                                                         %
-% >> clear vel;                                                           %
-% >> vel.v = [-1 1; -2 2];                                                %
-% >> vel.u = [1 2; 3 4];                                                  %
-% >> examineVel(vel);                                                     %
-% Error using examineVel (line 206)                                       %
-% At least one field in the velocity field structure is not in the proper %
-% order.                                                                  %
+% Determine whether the following coordinate and velocity field           %
+% structures are correct for MATfluids.                                   %
+%                                                                         %
+% >> clear coord vel;                                                     %
+% >> coord.x = (-2:0.05:2).';                                             %
+% >> coord.y = (0:0.1:1).';                                               %
+% >> coord.t = (0:0.01:1).';                                              %
+% >> vel.w   = rand(length(coord.x), 5, length(coord.t));                 %
+% >> examineFlowData(coord, vel);                                         %
+% Error using examineFlowData (line 236)                                  %
+% The fields of the velocity field structure have an incompatible size    %
+% with the provided coordinate structure.                                 %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function examineVel(vel)
+function examineFlowData(coord, vel)
 
 
 %% PARSE INPUTS
@@ -157,94 +194,50 @@ function examineVel(vel)
 % N/A
 
 % Input checks.
-check.vel = @(x) validateattributes(x,                                  ...
-                 {'struct'},                                            ...
-                 {'size', [1 1]});
+% N/A
 
 % Parse the inputs.
-hParser = inputParser;
-addRequired ( hParser, 'vel' , check.vel );
-parse(hParser, vel);
-clear check;
+% N/A
 
 % Additional verifications.
 nargoutchk(0,0);
+examineCoord(coord);
+examineVel(vel);
 
 
-%% EXAMINE VELOCITY FIELD STRUCTURE
+%% EXAMINE COORDINATE AND VELOCITY FIELD COMBINATION
 
-% List of valid fields.
-validFields = ["u"; "v"; "w"];
+% Get the fields in the coordinate and velocity field structures.
+fieldsCoord    = fieldnames(coord);
+numFieldsCoord = length(fieldsCoord);
+fieldsVel      = fieldnames(vel);
+numFieldsVel   = length(fieldsVel);
 
-% Get the fields in the velocity field structure.
-fields    = fieldnames(vel);
-numFields = length(fields);
-
-% Examine the validity of the fields in the velocity field structure.
-idx = zeros(size(fields));
-val = zeros(size(fields));
-for k = 1:numFields
-    % Determine whether the field is valid and its index in validFields.
-    [val(k), idx(k)] = max(strcmpi(fields{k}, validFields));
-    
-    % If there is no match, ensure the index is set to zero.
-    idx(k) = val(k)*idx(k);
+% Determine the sizes of the coordinate fields.
+sizeCoord = zeros(1, numFieldsCoord);
+for k = 1:numFieldsCoord
+    sizeCoord(k) = length(coord.(fieldsCoord{k}));
 end
-val = min(val);
-clear validFields;
+sizeCoord = sizeCoord(sizeCoord > 0);
+sizeCoordNoUnit = sizeCoord(sizeCoord > 1);
+clear fieldsCoord k numFieldsCoord;
 
-% Return an error if one of the fields is invalid.
-if ~val
-   error('vel:invalidFields',                                           ...
-        ['At least one field name is not valid in the velocity field s' ...
-         'tructure.']);
+% Return an error if the size of the velocity field is incompatible with
+% the provided coordinates.
+C = zeros(3,numFieldsVel);
+for k = 1:numFieldsVel
+    C(1,k) = isequal(sizeCoord, size(vel.(fieldsVel{k})))               ...
+          || isequal(sizeCoord, [size(vel.(fieldsVel{k})) 1]);
+    C(2,k) = isequal(sizeCoordNoUnit, size(vel.(fieldsVel{k})));
+    C(3,k) = isempty(vel.(fieldsVel{k}))                                ...
+          || isscalar(vel.(fieldsVel{k}));
 end
-clear val;
-
-% Return an error if one of the fields is not in the proper order.
-if min(diff(idx)) <= 0
-   error('vel:unorderedFields',                                         ...
-        ['At least one field in the velocity field structure is not in' ...
-         ' the proper order.']);
+if ~min(C(1,:) | C(2,:) | C(3,:))
+    error('flowdata:incompatibleSize',                                  ...
+         ['The fields of the velocity field structure have an incompat' ...
+          'ible size with the provided coordinate structure.']);
 end
-clear idx;
-
-% Return an error if one of the fields is not a real-valued array.
-C = zeros(2,numFields);
-for k = 1:numFields
-    C(1,k) = isrealnum(vel.(fields{k}), 'all');
-    C(2,k) = isempty(vel.(fields{k}));
-end
-if ~min(C(1,:) | C(2,:))
-    error('vel:notReal',                                                ...
-         ['At least one field in the velocity field structure does not' ...
-          'contain a real-valued array.']);
-end
-
-% Return an error if one of the fields has a different size.
-flag = 1;
-for k = 1:numFields
-    % Continue if the velocity component is empty or scalar.
-    C(1,k) = isscalar(vel.(fields{k}));
-    if C(1,k) | C(2,k), continue; end
-    
-    % Obtain the array size of the velocity field component for the first
-    % time.
-    if flag
-        tmp  = size(vel.(fields{k}));
-        flag = 0;
-        continue;
-    end
-    
-    % Compare array sizes for nonempty and nonscalar velocity field
-    % components.
-    if ~isequal(tmp, size(vel.(fields{k})))
-        error('vel:invalidSize',                                        ...
-             ['At least one field in the velocity field structure has ' ...
-              'a different array size than the others.']);
-    end
-end
-clear C fields flag k numFields tmp;
+clear C fieldsVel numFieldsVel sizeCoord sizeCoordNoUnit;
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%
@@ -258,7 +251,24 @@ clear C fields flag k numFields tmp;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% Line(s) N/A                                                             %
-% * N/A                                                                   %
+% Line(s) 221                                                             %
+% * Empty coordinate fields are permitted by MATfluids.                   %
+%                                                                         %
+% Line(s) 225-240                                                         %
+% * The condition C(1) takes care of the case where one of the fields in  %
+%   the coordinate structure has unit size and the unit dimension is also %
+%   contained in the velocity field. If the unit size corresponds to the  %
+%   last field (typically t or z), then a one should be added to the size %
+%   of the velocity field for proper comparison. Alternatively, the final %
+%   element in sizeCoord could be ignored.                                %
+% * The condition C(2) takes care of the case where one of the fields in  %
+%   the coordinate structure has unit size and the unit dimension is not  %
+%   contained in the velocity field. In this case, all unit sized fields  %
+%   in sizeCoord should be ignored for the comparison.                    %
+% * The condition C(3) allows a velocity component to be specified as an  %
+%   empty array or a scalar.                                              %
+% * Note that only one field in the velocity field structure need be      %
+%   evaluated since the examineVel function ensures that all the velocity %
+%   field components have the same array size.                            %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

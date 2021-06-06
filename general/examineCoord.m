@@ -213,7 +213,8 @@ C = zeros(3,numFields);
 for k = 1:numFields
     C(1,k) = isrealnum(coord.(fields{k}), 'all');
     C(2,k) = iscolumn(coord.(fields{k}));
-    C(3,k) = isempty(coord.(fields{k}));
+    C(3,k) = isempty(coord.(fields{k}))                                 ...
+          || isscalar(coord.(fields{k}));
 end
 if ~min((C(1,:) & C(2,:)) | C(3,:))
     error('coord:invalidCoordinates',                                   ...
