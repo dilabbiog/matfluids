@@ -19,7 +19,14 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
 % 2021/05/27 -- (GDL) Beta version of the code finalized.                 %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% FUTURE UPDATES                                                          %
+%                                                                         %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -124,6 +131,7 @@ parse(hParser, S, varargin{:});
 clear check default;
 
 % Additional verifications.
+nargoutchk(0,1);
 verify.char = ischar(S) & isrow(S);
 
 
@@ -164,6 +172,6 @@ end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % Line(s) N/A                                                             %
-% * N/A.                                                                  %
+% * N/A                                                                   %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

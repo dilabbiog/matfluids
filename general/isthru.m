@@ -19,7 +19,14 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
 % 2021/05/27 -- (GDL) Beta version of the code finalized.                 %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% FUTURE UPDATES                                                          %
+%                                                                         %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -154,7 +161,7 @@ parse(hParser, S, fun, varargin{:});
 clear check default;
 
 % Additional verifications.
-% N/A
+nargoutchk(0,1);
 
 
 %% DATA TYPE INTERROGATION
@@ -204,6 +211,6 @@ end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % Line(s) N/A                                                             %
-% * N/A.                                                                  %
+% * N/A                                                                   %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

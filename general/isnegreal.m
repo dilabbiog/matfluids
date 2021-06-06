@@ -2,9 +2,9 @@
 %                                                                         %
 %                             GENERAL TOOLBOX                             %
 %                                                                         %
-% isposreal                                                               %
+% isnegreal                                                               %
 % Data Interrogation                                                      %
-% Examine data for genuine positive real numbers                          %
+% Examine data for genuine negative real numbers                          %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -20,11 +20,7 @@
 % CHANGE LOG                                                              %
 %                                                                         %
 % 2021/06/06 -- (GDL) Added return false for empty arrays.                %
-% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
-% 2021/05/27 -- (GDL) Corrected real tolerance, ensures isposreal(0) = 0. %
-% 2021/05/27 -- (GDL) Added 'all' option for all() function.              %
-% 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
-% 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
+% 2021/06/04 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -53,22 +49,22 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% val = isposreal(S);                                                     %
-% val = isposreal(S, 'all');                                              %
-% val = isposreal(___, Name, Value);                                      %
+% val = isnegreal(S);                                                     %
+% val = isnegreal(S, 'all');                                              %
+% val = isnegreal(___, Name, Value);                                      %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
 % Examine the elements of an input array and determine whether each is a  %
-% genuine positive real number. The 'all' option determines whether the   %
-% entire input array consists only of genuine positive real numbers. A    %
+% genuine negative real number. The 'all' option determines whether the   %
+% entire input array consists only of genuine negative real numbers. A    %
 % tolerance can be specified on the fractional part of a real number to   %
 % account for typical small numerical errors (i.e., what qualifies as     %
 % zero). Likewise, a tolerance can be specified on the imaginary part of  %
 % a number. The default tolerances are zero. Elements of the input array  %
-% that are either +Inf or NaN can be specified as genuine positive real   %
+% that are either -Inf or NaN can be specified as genuine negative real   %
 % numbers or not. By default, such elements are considered to be genuine  %
-% positive real numbers.                                                  %
+% negative real numbers.                                                  %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -87,7 +83,7 @@
 % ----------------------------------------------------------------------- %
 % 'S'            LOGICAL/NUMERIC N-DIMENSIONAL ARRAY                      %
 %              ~ Input array. The elements of this array will be examined %
-%                for genuine positive real numbers. Data types that are   %
+%                for genuine negative real numbers. Data types that are   %
 %                not logical or numeric are accepted, but will return     %
 %                zero.                                                    %
 % ======================================================================= %
@@ -95,19 +91,19 @@
 % ----------------------------------------------------------------------- %
 % 'all'          CASE-INSENSITIVE CHARACTER ARRAY                         %
 %              ~ Specify 'all' to determine whether the entire input      %
-%                array consists only of genuine positive real numbers.    %
+%                array consists only of genuine negative real numbers.    %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
 % 'inf'          LOGICAL SCALAR                                           %
 %                Default: true                                            %
-%              ~ Specify whether +Inf values are to be treated as genuine %
-%                positive real numbers (true, 1) or not (false, 0).       %
+%              ~ Specify whether -Inf values are to be treated as genuine %
+%                negative real numbers (true, 1) or not (false, 0).       %
 % ----------------------------------------------------------------------- %
 % 'nan'          LOGICAL SCALAR                                           %
 %                Default: true                                            %
 %              ~ Specify whether NaN values are to be treated as genuine  %
-%                positive real numbers (true, 1) or not (false, 0).       %
+%                negative real numbers (true, 1) or not (false, 0).       %
 % ----------------------------------------------------------------------- %
 % 'tolIm'        NONNEGATIVE REAL SCALAR                                  %
 %                Default: 0                                               %
@@ -121,54 +117,54 @@
 % ----------------------------------------------------------------------- %
 % 'val'          LOGICAL N-DIMENSIONAL ARRAY/SCALAR                       %
 %              ~ Output array. The elements of this array address whether %
-%                the elements of the input array are genuine positive     %
+%                the elements of the input array are genuine negative     %
 %                real numbers (1) or not (0). If the 'all' option is      %
 %                specified, a logical scalar will instead address whether %
-%                the entire input array consists only of genuine positive %
+%                the entire input array consists only of genuine negative %
 %                real numbers (1) or not (0).                             %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
 % Determine whether the elements of the array x = [2 Inf 0.1 1e-12 -Inf]  %
-% are genuine positive real numbers. Consider numbers below 1e-8 as zero. %
+% are genuine negative real numbers. Consider numbers below 1e-8 as zero. %
 %                                                                         %
 % >> x   = [2 Inf 0.1 1e-12 -Inf];                                        %
-% >> val = isposreal(x, 'tolRe', 1e-8);                                   %
+% >> val = isnegreal(x, 'tolRe', 1e-8);                                   %
 % >> disp(val);                                                           %
-%    1   1   1   0   0                                                    %
+%    0   0   0   0   1                                                    %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 2                                                               %
 %                                                                         %
-% Determine whether the elements of the array x = [2+1i*1e-12 Inf 1+1i]   %
-% are genuine positive real numbers. Use a tolerance of 1e-8 for the      %
-% imaginary parts of complex numbers and do not consider +Inf values to   %
-% be genuine positive real numbers.                                       %
+% Determine whether the elements of the array x = [2+1i*1e-12 -Inf 1+1i]  %
+% are genuine negative real numbers. Use a tolerance of 1e-8 for the      %
+% imaginary parts of complex numbers and do not consider -Inf values to   %
+% be genuine negative real numbers.                                       %
 %                                                                         %
-% >> x   = [2+1i*1e-12 Inf 1+1i];                                         %
-% >> val = isposreal(x, 'tolIm', 1e-8, 'inf', 0);                         %
+% >> x   = [2+1i*1e-12 -Inf 1+1i];                                        %
+% >> val = isnegreal(x, 'tolIm', 1e-8, 'inf', 0);                         %
 % >> disp(val);                                                           %
-%    1   1   0                                                            %
+%    0   0   0                                                            %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 3                                                               %
 %                                                                         %
-% Determine whether the entire array x = [1.3 2 NaN 0.7 0] contains only  %
-% genuine positive real numbers. Consider NaN values to be genuine        %
-% positive real numbers.                                                  %
+% Determine whether the entire array x = [-1.3 -2 NaN -0.7 0] contains    %
+% onlybgenuine negative real numbers. Consider NaN values to be genuine   %
+% negative real numbers.                                                  %
 %                                                                         %
-% >> x   = [1.3 2 NaN 0.7 0];                                             %
-% >> val = isposreal(x, 'all');                                           %
+% >> x   = [-1.3 -2 NaN -0.7 0];                                          %
+% >> val = isnegreal(x, 'all');                                           %
 % >> disp(val);                                                           %
 %    0                                                                    %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [val] = isposreal(S, varargin)
+function [val] = isnegreal(S, varargin)
 
 
 %% PARSE INPUTS
@@ -210,10 +206,10 @@ clear check default;
 nargoutchk(0,1);
 
 
-%% POSITIVE REAL NUMBER INTERROGATION
+%% NEGATIVE REAL NUMBER INTERROGATION
 
 % If the input is not logical nor numeric, or if the input is empty, then
-% it cannot be a positive real number. The char data type is not accepted
+% it cannot be a negative real number. The char data type is not accepted
 % as an integer by MATfluids.
 if ~(islogical(S) || isnumeric(S)) || isempty(S)
     val = 0;
@@ -223,10 +219,10 @@ end
 % Initialize a cell to hold the conditions.
 C = cell(3,1);
 
-% (Allow Inf?) AND (Is Inf?) AND (Is +?) AND (No Im?)
+% (Allow Inf?) AND (Is Inf?) AND (Is -?) AND (No Im?)
 C{1} =  hParser.Results.inf                                             ...
      &  isinf(real(S))                                                  ...
-     & (sign(real(S)) == 1)                                             ...
+     & (sign(real(S)) == -1)                                            ...
      & ~isinf(imag(S))                                                  ...
      & (abs(imag(S)) <= hParser.Results.tolIm);
 % (Allow NaN?) AND (Is NaN?) AND (No Im?)
@@ -234,13 +230,13 @@ C{2} =  hParser.Results.nan                                             ...
      &  isnan(real(S))                                                  ...
      & ~isnan(imag(S))                                                  ...
      & (abs(imag(S)) <= hParser.Results.tolIm);
-% (Not Inf?) AND (Not NaN?) AND (Is +?) AND (No Im?)
+% (Not Inf?) AND (Not NaN?) AND (Is -?) AND (No Im?)
 C{3} = ~isinf(real(S))                                                  ...
      & ~isnan(real(S))                                                  ...
-     & (real(S) > hParser.Results.tolRe)                                ...
+     & (real(S) < -hParser.Results.tolRe)                               ...
      & (abs(imag(S)) <= hParser.Results.tolIm);
 
-% (+Inf?) OR (NaN?) OR (Positive Real?)
+% (-Inf?) OR (NaN?) OR (Negative Real?)
 val = C{1} | C{2} | C{3};
 clear C;
 

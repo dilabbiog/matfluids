@@ -19,9 +19,16 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
 % 2021/05/27 -- (GDL) Added simple input parser.                          %
 % 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
 % 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% FUTURE UPDATES                                                          %
+%                                                                         %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -142,7 +149,7 @@ addRequired ( hParser, 'S' );
 parse(hParser, S);
 
 % Additional verifications.
-% N/A
+nargoutchk(0,1);
 
 
 %% CHARACTER-STRING INTERROGATION
@@ -163,6 +170,6 @@ val = ischar(S) | isstring(S);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % Line(s) N/A                                                             %
-% * N/A.                                                                  %
+% * N/A                                                                   %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

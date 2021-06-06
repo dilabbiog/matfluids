@@ -19,10 +19,18 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2021/06/06 -- (GDL) Added return false for empty arrays.                %
+% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
 % 2021/05/27 -- (GDL) Corrected real tolerance, ensures isposint(0) = 0.  %
 % 2021/05/27 -- (GDL) Added 'all' option for all() function.              %
 % 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
 % 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% FUTURE UPDATES                                                          %
+%                                                                         %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -198,14 +206,15 @@ parse(hParser, S, varargin{:});
 clear check default;
 
 % Additional verifications.
-% N/A
+nargoutchk(0,1);
 
 
 %% POSITIVE INTEGER INTERROGATION
 
-% If the input is not logical or numeric, then it cannot be a positive
-% integer. The char data type is not accepted as an integer by MATfluids.
-if ~(islogical(S) || isnumeric(S))
+% If the input is not logical nor numeric, or if the input is empty, the
+% it cannot be a positive integer. The char data type is not accepted as an
+% integer by MATfluids.
+if ~(islogical(S) || isnumeric(S)) || isempty(S)
     val = 0;
     return;
 end
@@ -252,6 +261,6 @@ end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % Line(s) N/A                                                             %
-% * N/A.                                                                  %
+% * N/A                                                                   %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

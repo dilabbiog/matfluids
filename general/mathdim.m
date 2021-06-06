@@ -19,7 +19,16 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2021/06/04 -- (GDL) Added future updates comments.                      %
+% 2021/06/03 -- (GDL) Added nargoutchk.                                   %
+% 2021/06/03 -- (GDL) Added output of non-unitary directions.             %
 % 2021/05/27 -- (GDL) Beta version of the code finalized.                 %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% FUTURE UPDATES                                                          %
+%                                                                         %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -43,6 +52,7 @@
 % SYNTAX                                                                  %
 %                                                                         %
 % dim = mathdim(A);                                                       %
+% [dim, dir] = mathdim(A);                                                %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -50,7 +60,8 @@
 % a scalar will have a dimension of 0, a vector will have a dimension of  %
 % 1 (regardless of which direction its length lies), a matrix will have a %
 % dimension of 2 and so on. For arrays of dimension 2 or greater, the     %
-% mathematical dimension is taken as ndims(squeeze()).                    %
+% mathematical dimension is taken as ndims(squeeze()). The directions     %
+% along which the array size is non-unitary can also be determined.       %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R20019b or later.                                                %
@@ -85,6 +96,10 @@
 %              ~ Output scalar. True mathematical dimension of a logical  %
 %                or numeric array, being 0 for a scalar, 1 for a vector,  %
 %                2 for a matrix and so on.                                %
+% ----------------------------------------------------------------------- %
+% 'dir'          NONNEGATIVE INTEGER ARRAY                                %
+%              ~ Output array. The directions along which the array size  %
+%                is non-unitary.                                          %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
@@ -124,17 +139,21 @@
 % EXAMPLE 4                                                               %
 %                                                                         %
 % Determine the true mathematical dimension of the four-dimensional array %
-% x = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]).                          %
+% x = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]) as well as the directions %
+% along which the size is non-unitary.                                    %
 %                                                                         %
-% >> x   = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]);                     %
-% >> dim = mathdim(x);                                                    %
+% >> x          = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]);              %
+% >> [dim, dir] = mathdim(x);                                             %
 % >> disp(dim);                                                           %
 %      2                                                                  %
+% >> disp(dir);                                                           %
+%      3                                                                  %
+%      4                                                                  %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [dim] = mathdim(A)
+function [dim, varargout] = mathdim(A)
 
 
 %% PARSE INPUTS
@@ -154,14 +173,27 @@ parse(hParser, A);
 clear check;
 
 % Additional verifications.
-% N/A
+nargoutchk(0,2);
 
 
 %% DETERMINE MATHEMATICAL DIMENSION
 
-if     isscalar(A),          dim = 0;
-elseif isvector(squeeze(A)), dim = 1;
-else,                        dim = ndims(squeeze(A));
+% Determine the mathematical dimension and the non-unitary directions.
+if isscalar(A)
+    dim = 0;
+    dir = 0;
+elseif isvector(squeeze(A))
+    dim     = 1;
+    [~,dir] = max(size(A));
+else
+    dim = ndims(squeeze(A));
+    dir = (1:ndims(A)).';
+    dir = dir(size(A) ~= 1);
+end
+
+% Output the non-unitary directions.
+if nargout == 2
+    varargout{1} = dir;
 end
 
 
@@ -177,6 +209,6 @@ end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % Line(s) N/A                                                             %
-% * N/A.                                                                  %
+% * N/A                                                                   %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

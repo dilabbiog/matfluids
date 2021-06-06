@@ -2,9 +2,9 @@
 %                                                                         %
 %                             GENERAL TOOLBOX                             %
 %                                                                         %
-% islogiconum                                                             %
-% Data Type Interrogation                                                 %
-% Examine whether data type is logical or numeric                         %
+% examineCoord                                                            %
+% MATfluids Structure Interrogation                                       %
+% Examine contents of coordinate structure                                %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -19,10 +19,7 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
-% 2021/05/27 -- (GDL) Added simple input parser.                          %
-% 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
-% 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
+% 2021/06/06 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -51,18 +48,21 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% val = islogiconum(S);                                                   %
+% examineCoord(coord);                                                    %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Examine whether an input has the logical or numeric data type. Returns  %
-% true if either islogical() or isnumeric() return true.                  %
+% Examine whether a coordinate structure is properly formatted for        %
+% MATfluids. The function has no specific output, it will simply throw an %
+% error if the coordinate structure is not correctly formatted.           %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
 %                                                                         %
 % Dependencies:                                                           %
-% N/A                                                                     %
+% isnegreal                                                               %
+% isposreal                                                               %
+% isrealnum                                                               %
 %                                                                         %
 % Acknowledgments:                                                        %
 % N/A                                                                     %
@@ -73,9 +73,20 @@
 % ======================================================================= %
 % Input Arguments (Required):                                             %
 % ----------------------------------------------------------------------- %
-% 'S'            ANY INPUT                                                %
-%              ~ Input variable. The data type will be examined for       %
-%                whether it is logical or numeric.                        %
+% 'coord'        STRUCT ARRAY (1 X 1)                                     %
+%              ~ Coordinates. The structure array may contain the         %
+%                following fields:                                        %
+%                1) coord.x representing the space coordinate x;          %
+%                2) coord.y representing the space coordinate y;          %
+%                3) coord.z representing the space coordinate z;          %
+%                4) coord.t representing the time coordinate t.           %
+%                Each field is a column vector (one-dimensional array)    %
+%                that strictly increases/decreases monotonically from the %
+%                first row to the last. Not all fields need be present in %
+%                the coordinate structure, however the order must follow  %
+%                [x y z t]. For example, the coordinate structure may     %
+%                contain fields ordered as [x z t] but not as [t x z].    %
+%                Both empty and scalar arrays are permitted.              %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
@@ -87,49 +98,56 @@
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
-% 'val'          LOGICAL SCALAR                                           %
-%              ~ Output logical scalar. The value will be 1 (true) if the %
-%                input data type is either logical or numeric and 0       %
-%                (false) otherwise.                                       %
+% N/A                                                                     %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Determine whether the array x = [2 Inf NaN 10^-12 -Inf 2*i -3.1] is     %
-% logical or numeric.                                                     %
+% Determine whether the elements of the following coordinate structure is %
+% correct for MATfluids.                                                  %
 %                                                                         %
-% >> x   = [2 Inf NaN 10^-12 -Inf 2*i -3.1];                              %
-% >> val = islogiconum(x);                                                %
-% >> disp(val);                                                           %
-%    1                                                                    %
+% >> clear coord;                                                         %
+% >> coord.x = (-10:0.1:10).';                                            %
+% >> coord.y = (0:0.1:5).';                                               %
+% >> coord.t = (0:0.1:2).';                                               %
+% >> examineCoord(coord);                                                 %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 2                                                               %
 %                                                                         %
-% Determine whether the logical array x = logical([0 true 1 false]) is    %
-% logical or numeric.                                                     %
+% Determine whether the elements of the following coordinate structure is %
+% correct for MATfluids.                                                  %
 %                                                                         %
-% >> x   = logical([0 true 1 false]);                                     %
-% >> val = islogiconum(x);                                                %
-% >> disp(val);                                                           %
-%    1                                                                    %
+% >> clear coord;                                                         %
+% >> coord.t = (0:0.1:2).';                                               %
+% >> coord.y = (0:0.1:5).';                                               %
+% >> coord.x = (-10:0.1:10).';                                            %
+% >> examineCoord(coord);                                                 %
+% Error using examineCoord (line 205)                                     %
+% At least one field in the coordinate structure is not in the proper     %
+% order.                                                                  %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 3                                                               %
 %                                                                         %
-% Determine whether the cell array x = {1 NaN 2.4} is logical or numeric. %
+% Determine whether the elements of the following coordinate structure is %
+% correct for MATfluids.                                                  %
 %                                                                         %
-% >> x   = {1 NaN 2.4};                                                   %
-% >> val = islogiconum(x);                                                %
-% >> disp(val);                                                           %
-%    0                                                                    %
+% >> clear coord;                                                         %
+% >> coord.x = [1 2 4 6 5].';                                             %
+% >> coord.y = (0:0.1:5).';                                               %
+% >> coord.t = (0:0.1:2).';                                               %
+% >> examineCoord(coord);                                                 %
+% Error using examineCoord (line 233)                                     %
+% At least one field in the coordinate structure does not contain a       %
+% strictly monotonically increasing/decreasing real-valued column vector. %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [val] = islogiconum(S)
+function examineCoord(coord)
 
 
 %% PARSE INPUTS
@@ -138,21 +156,86 @@ function [val] = islogiconum(S)
 % N/A
 
 % Input checks.
-% N/A
+check.coord = @(x) validateattributes(x,                                ...
+                   {'struct'},                                          ...
+                   {'size', [1 1]});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'S' );
-parse(hParser, S);
+addRequired ( hParser, 'coord' , check.coord );
+parse(hParser, coord);
+clear check;
 
 % Additional verifications.
-nargoutchk(0,1);
+nargoutchk(0,0);
 
 
-%% LOGICONUMERIC INTERROGATION
+%% EXAMINE COORDINATE STRUCTURE
 
-% (Is numeric?) OR (Is logical?)
-val = isnumeric(S) | islogical(S);
+% List of valid fields.
+validFields = ["x"; "y"; "z"; "t"];
+
+% Get the fields in the coordinate structure.
+fields    = fieldnames(coord);
+numFields = length(fields);
+
+% Examine the validity of the fields in the coordinate structure.
+idx = zeros(size(fields));
+val = zeros(size(fields));
+for k = 1:numFields
+    % Determine whether the field is valid and its index in validFields.
+    [val(k), idx(k)] = max(strcmpi(fields{k}, validFields));
+    
+    % If there is no match, ensure the index is set to zero.
+    idx(k) = val(k)*idx(k);
+end
+val = min(val);
+clear validFields;
+
+% Return an error if one of the fields is invalid.
+if ~val
+   error('coord:invalidFields',                                         ...
+        ['At least one field name is not valid in the coordinate struc' ...
+         'ture.']);
+end
+clear val;
+
+% Return an error if one of the fields is not in the proper order.
+if min(diff(idx)) <= 0
+   error('coord:unorderedFields',                                       ...
+        ['At least one field in the coordinate structure is not in the' ...
+         ' proper order.']);
+end
+clear idx;
+
+% Return an error if one of the coordinate fields is not a column vector.
+C = zeros(3,numFields);
+for k = 1:numFields
+    C(1,k) = isrealnum(coord.(fields{k}), 'all');
+    C(2,k) = iscolumn(coord.(fields{k}));
+    C(3,k) = isempty(coord.(fields{k}));
+end
+if ~min((C(1,:) & C(2,:)) | C(3,:))
+    error('coord:invalidCoordinates',                                   ...
+         ['At least one field in the coordinate structure does not con' ...
+          'tain a strictly monotonically increasing/decreasing real-va' ...
+          'lued column vector.']);
+end
+
+% Return an error if one of the coordinate fields is not strictly
+% monotonically increasing/decreasing.
+for k = 1:numFields
+    tmp  = diff(coord.(fields{k}));
+    C(1,k) = isposreal(tmp, 'all');
+    C(2,k) = isnegreal(tmp, 'all');
+end
+if ~min(C(1,:) | C(2,:) | C(3,:))
+    error('coord:invalidCoordinates',                                   ...
+         ['At least one field in the coordinate structure does not con' ...
+          'tain a strictly monotonically increasing/decreasing real-va' ...
+          'lued column vector.']);
+end
+clear C fields k numFields tmp;
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%

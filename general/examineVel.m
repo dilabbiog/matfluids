@@ -2,9 +2,9 @@
 %                                                                         %
 %                             GENERAL TOOLBOX                             %
 %                                                                         %
-% islogiconum                                                             %
-% Data Type Interrogation                                                 %
-% Examine whether data type is logical or numeric                         %
+% examineVel                                                              %
+% MATfluids Structure Interrogation                                       %
+% Examine contents of velocity field structure                            %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -19,10 +19,7 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
-% 2021/05/27 -- (GDL) Added simple input parser.                          %
-% 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
-% 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
+% 2021/06/05 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -51,18 +48,19 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% val = islogiconum(S);                                                   %
+% examineVel(vel);                                                        %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Examine whether an input has the logical or numeric data type. Returns  %
-% true if either islogical() or isnumeric() return true.                  %
+% Examine whether a velocity field structure is properly formatted for    %
+% MATfluids. The function has no specific output, it will simply throw an %
+% error if the velocity field structure is not correctly formatted.       %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
 %                                                                         %
 % Dependencies:                                                           %
-% N/A                                                                     %
+% isrealnum                                                               %
 %                                                                         %
 % Acknowledgments:                                                        %
 % N/A                                                                     %
@@ -73,9 +71,20 @@
 % ======================================================================= %
 % Input Arguments (Required):                                             %
 % ----------------------------------------------------------------------- %
-% 'S'            ANY INPUT                                                %
-%              ~ Input variable. The data type will be examined for       %
-%                whether it is logical or numeric.                        %
+% 'vel'          STRUCT ARRAY (1 X 1)                                     %
+%              ~ Velocity field. The structure array may contain the      %
+%                following fields:                                        %
+%                1) vel.u representing the velocity component along x;    %
+%                2) vel.v representing the velocity component along y;    %
+%                3) vel.w representing the velocity component along z.    %
+%                Each field is a one to four dimensional array, in ndgrid %
+%                format (i.e., dimensions represent [x y z t]). All       %
+%                constituent arrays must have the same size. Not all      %
+%                fields need be present in the velocity field structure,  %
+%                however the order must follow [u v w]. For example, the  %
+%                velocity field structure may contain fields ordered as   %
+%                [u w] but not as [w u]. Both empty and scalar arrays are %
+%                permitted.                                               %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
@@ -87,49 +96,59 @@
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
-% 'val'          LOGICAL SCALAR                                           %
-%              ~ Output logical scalar. The value will be 1 (true) if the %
-%                input data type is either logical or numeric and 0       %
-%                (false) otherwise.                                       %
+% N/A                                                                     %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Determine whether the array x = [2 Inf NaN 10^-12 -Inf 2*i -3.1] is     %
-% logical or numeric.                                                     %
+% Determine whether the elements of the following velocity field          %
+% structure is correct for MATfluids.                                     %
 %                                                                         %
-% >> x   = [2 Inf NaN 10^-12 -Inf 2*i -3.1];                              %
-% >> val = islogiconum(x);                                                %
-% >> disp(val);                                                           %
-%    1                                                                    %
+% >> clear vel;                                                           %
+% >> vel.u = 1;                                                           %
+% >> vel.v = [1 2 3; 4 5 6; 7 8 9];                                       %
+% >> vel.w = [1 2 1; 2 1 2; 1 2 1];                                       %
+% >> examineVel(vel);                                                     %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 2                                                               %
 %                                                                         %
-% Determine whether the logical array x = logical([0 true 1 false]) is    %
-% logical or numeric.                                                     %
-%                                                                         %
-% >> x   = logical([0 true 1 false]);                                     %
-% >> val = islogiconum(x);                                                %
-% >> disp(val);                                                           %
-%    1                                                                    %
+% >> clear vel;                                                           %
+% >> vel.u = [-1 1; -2 2];                                                %
+% >> vel.v = [1 2 3; 4 5 6; 7 8 9];                                       %
+% >> vel.w = [];                                                          %
+% >> examineVel(vel);                                                     %
+% Error using examineVel (line 242)                                       %
+% At least one field in the velocity field structure has a different      %
+% array size than the others.                                             %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 3                                                               %
 %                                                                         %
-% Determine whether the cell array x = {1 NaN 2.4} is logical or numeric. %
+% >> clear vel;                                                           %
+% >> vel.u = [-1 1; -2 2];                                                %
+% >> vel.v = [1 2; 3 4];                                                  %
+% >> vel.w = [];                                                          %
+% >> examineVel(vel);                                                     %
 %                                                                         %
-% >> x   = {1 NaN 2.4};                                                   %
-% >> val = islogiconum(x);                                                %
-% >> disp(val);                                                           %
-%    0                                                                    %
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
+%                                                                         %
+% EXAMPLE 4                                                               %
+%                                                                         %
+% >> clear vel;                                                           %
+% >> vel.v = [-1 1; -2 2];                                                %
+% >> vel.u = [1 2; 3 4];                                                  %
+% >> examineVel(vel);                                                     %
+% Error using examineVel (line 206)                                       %
+% At least one field in the velocity field structure is not in the proper %
+% order.                                                                  %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [val] = islogiconum(S)
+function examineVel(vel)
 
 
 %% PARSE INPUTS
@@ -138,21 +157,94 @@ function [val] = islogiconum(S)
 % N/A
 
 % Input checks.
-% N/A
+check.vel = @(x) validateattributes(x,                                  ...
+                 {'struct'},                                            ...
+                 {'size', [1 1]});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'S' );
-parse(hParser, S);
+addRequired ( hParser, 'vel' , check.vel );
+parse(hParser, vel);
+clear check;
 
 % Additional verifications.
-nargoutchk(0,1);
+nargoutchk(0,0);
 
 
-%% LOGICONUMERIC INTERROGATION
+%% EXAMINE VELOCITY FIELD STRUCTURE
 
-% (Is numeric?) OR (Is logical?)
-val = isnumeric(S) | islogical(S);
+% List of valid fields.
+validFields = ["u"; "v"; "w"];
+
+% Get the fields in the velocity field structure.
+fields    = fieldnames(vel);
+numFields = length(fields);
+
+% Examine the validity of the fields in the velocity field structure.
+idx = zeros(size(fields));
+val = zeros(size(fields));
+for k = 1:numFields
+    % Determine whether the field is valid and its index in validFields.
+    [val(k), idx(k)] = max(strcmpi(fields{k}, validFields));
+    
+    % If there is no match, ensure the index is set to zero.
+    idx(k) = val(k)*idx(k);
+end
+val = min(val);
+clear validFields;
+
+% Return an error if one of the fields is invalid.
+if ~val
+   error('vel:invalidFields',                                           ...
+        ['At least one field name is not valid in the velocity field s' ...
+         'tructure.']);
+end
+clear val;
+
+% Return an error if one of the fields is not in the proper order.
+if min(diff(idx)) <= 0
+   error('vel:unorderedFields',                                         ...
+        ['At least one field in the velocity field structure is not in' ...
+         ' the proper order.']);
+end
+clear idx;
+
+% Return an error if one of the fields is not a real-valued array.
+C = zeros(2,numFields);
+for k = 1:numFields
+    C(1,k) = isrealnum(vel.(fields{k}), 'all');
+    C(2,k) = isempty(vel.(fields{k}));
+end
+if ~min(C(1,:) | C(2,:))
+    error('vel:notReal',                                                ...
+         ['At least one field in the velocity field structure does not' ...
+          'contain a real-valued array.']);
+end
+
+% Return an error if one of the fields has a different size.
+flag = 1;
+for k = 1:numFields
+    % Continue if the velocity component is empty or scalar.
+    C(1,k) = isscalar(vel.(fields{k}));
+    if C(1,k) | C(2,k), continue; end
+    
+    % Obtain the array size of the velocity field component for the first
+    % time.
+    if flag
+        tmp  = size(vel.(fields{k}));
+        flag = 0;
+        continue;
+    end
+    
+    % Compare array sizes for nonempty and nonscalar velocity field
+    % components.
+    if ~isequal(tmp, size(vel.(fields{k})))
+        error('vel:invalidSize',                                        ...
+             ['At least one field in the velocity field structure has ' ...
+              'a different array size than the others.']);
+    end
+end
+clear C fields flag k numFields tmp;
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%
