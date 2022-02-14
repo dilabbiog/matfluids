@@ -19,6 +19,7 @@
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/14 -- (GDL) Removed extra % found outside of preamble.          %
 % 2021/06/06 -- (GDL) Added return false for empty arrays.                %
 % 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
 % 2021/05/27 -- (GDL) Added 'all' option for all() function.              %
@@ -86,7 +87,7 @@
 % 'S'            LOGICAL/NUMERIC N-DIMENSIONAL ARRAY                      %
 %              ~ Input array. The elements of this array will be examined %
 %                for genuine Gaussian integers. Data types that are not   %
-%                logical or numeric are accepted, but will return zero.   %                          %
+%                logical or numeric are accepted, but will return zero.   %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
