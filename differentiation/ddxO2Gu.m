@@ -129,7 +129,7 @@
 % >> geom(5:20,5:20)   = 1;                                               %
 % >> geom(40:45,55:80) = 1;                                               %
 % >> u                 = geom.*(Y.^2).*sin(X);                            %
-% >> tic; uy_O2        = ddxO2Gu(u, dy, geom, 2); toc;                    %
+% >> uy_O2             = ddxO2Gu(u, dy, geom, 2);                         %
 % >> uy_TRUE           = 2*geom.*Y.*sin(X);                               %
 % >> E2                = abs(uy_O2 - uy_TRUE);                            %
 % >> disp(max(E2(:)));                                                    %
@@ -284,6 +284,7 @@ du = ipermute(du, pm);
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/23 -- (GDL) Removed tic-toc in example 2.                       %
 % 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %
 % 2022/02/22 -- (GDL) Formatted the code.                                 %
 % 2021/07/30 -- (GDL) Beta version of the code finalized.                 %
