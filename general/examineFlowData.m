@@ -17,19 +17,7 @@
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% CHANGE LOG                                                              %
-%                                                                         %
-% 2021/06/05 -- (GDL) Beta version of the code finalized.                 %
-%                                                                         %
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-%                                                                         %
-% FUTURE UPDATES                                                          %
-%                                                                         %
-% None foreseen at the moment.                                            %
-%                                                                         %
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-%                                                                         %
-% Copyright (C) 2021 Giuseppe Di Labbio                                   %
+% Copyright (C) 2022 Giuseppe Di Labbio                                   %
 %                                                                         %
 % This program is free software: you can redistribute it and/or modify it %
 % under the terms of the GNU General Public License as published by the   %
@@ -178,7 +166,7 @@
 % >> coord.t = (0:0.01:1).';                                              %
 % >> vel.w   = rand(length(coord.x), 5, length(coord.t));                 %
 % >> examineFlowData(coord, vel);                                         %
-% Error using examineFlowData (line 236)                                  %
+% Error using examineFlowData (line 224)                                  %
 % The fields of the velocity field structure have an incompatible size    %
 % with the provided coordinate structure.                                 %
 %                                                                         %
@@ -240,21 +228,16 @@ end
 clear C fieldsVel numFieldsVel sizeCoord sizeCoordNoUnit;
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%
-
-%#ok<*N/A>
-% Line(s) N/A
-% Message(s)
-% * N/A
-% Reason(s)
-% * N/A
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                         %
-% Line(s) 221                                                             %
+%                                  NOTES                                  %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% Line(s) 209                                                             %
 % * Empty coordinate fields are permitted by MATfluids.                   %
 %                                                                         %
-% Line(s) 225-240                                                         %
+% Line(s) 213-228                                                         %
 % * The condition C(1) takes care of the case where one of the fields in  %
 %   the coordinate structure has unit size and the unit dimension is also %
 %   contained in the velocity field. If the unit size corresponds to the  %
@@ -270,5 +253,30 @@ clear C fieldsVel numFieldsVel sizeCoord sizeCoordNoUnit;
 % * Note that only one field in the velocity field structure need be      %
 %   evaluated since the examineVel function ensures that all the velocity %
 %   field components have the same array size.                            %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% SUPPRESSED MESSAGES                                                     %
+%                                                                         %
+%#ok<*N/A>                                                                %
+% Line(s) N/A                                                             %
+% Message(s)                                                              %
+% * N/A                                                                   %
+% Reason(s)                                                               %
+% * N/A                                                                   %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% CHANGE LOG                                                              %
+%                                                                         %
+% 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
+%                     reformatted notes.                                  %
+% 2021/06/05 -- (GDL) Beta version of the code finalized.                 %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% FUTURE UPDATES                                                          %
+%                                                                         %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

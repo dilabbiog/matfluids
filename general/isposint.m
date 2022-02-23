@@ -17,24 +17,7 @@
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% CHANGE LOG                                                              %
-%                                                                         %
-% 2021/06/06 -- (GDL) Added return false for empty arrays.                %
-% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
-% 2021/05/27 -- (GDL) Corrected real tolerance, ensures isposint(0) = 0.  %
-% 2021/05/27 -- (GDL) Added 'all' option for all() function.              %
-% 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
-% 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
-%                                                                         %
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-%                                                                         %
-% FUTURE UPDATES                                                          %
-%                                                                         %
-% None foreseen at the moment.                                            %
-%                                                                         %
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-%                                                                         %
-% Copyright (C) 2021 Giuseppe Di Labbio                                   %
+% Copyright (C) 2022 Giuseppe Di Labbio                                   %
 %                                                                         %
 % This program is free software: you can redistribute it and/or modify it %
 % under the terms of the GNU General Public License as published by the   %
@@ -189,7 +172,7 @@ check.nan   = @(x) validateattributes(x,                                ...
                    {'binary', 'scalar'});
 check.tolIm = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
-                   {'finite', 'nonnegative', 'real', 'scalar'}) ;
+                   {'finite', 'nonnegative', 'real', 'scalar'});
 check.tolRe = @(x) validateattributes(real(x),                          ...
                    {'logical', 'numeric'},                              ...
                    {'finite', 'nonnegative', 'real', 'scalar'});
@@ -249,18 +232,43 @@ if hParser.Results.all
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%
-
-%#ok<*N/A>
-% Line(s) N/A
-% Message(s)
-% * N/A
-% Reason(s)
-% * N/A
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%                                  NOTES                                  %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % Line(s) N/A                                                             %
 % * N/A                                                                   %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% SUPPRESSED MESSAGES                                                     %
+%                                                                         %
+%#ok<*N/A>                                                                %
+% Line(s) N/A                                                             %
+% Message(s)                                                              %
+% * N/A                                                                   %
+% Reason(s)                                                               %
+% * N/A                                                                   %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% CHANGE LOG                                                              %
+%                                                                         %
+% 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
+%                     reformatted notes.                                  %
+% 2021/06/06 -- (GDL) Added return false for empty arrays.                %
+% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
+% 2021/05/27 -- (GDL) Corrected real tolerance, ensures isposint(0) = 0.  %
+% 2021/05/27 -- (GDL) Added 'all' option for all() function.              %
+% 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
+% 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% FUTURE UPDATES                                                          %
+%                                                                         %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

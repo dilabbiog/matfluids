@@ -1,10 +1,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                         %
-%                             GENERAL TOOLBOX                             %
+%                         DIFFERENTIATION TOOLBOX                         %
 %                                                                         %
-% islogiconum                                                             %
-% Data Type Interrogation                                                 %
-% Examine whether data type is logical or numeric                         %
+% ddxO2Su                                                                 %
+% Finite Difference Derivative                                            %
+% First derivative, second-order error, uniform spacing                   %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -36,18 +36,23 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% val = islogiconum(S);                                                   %
+% du = ddxO2Su(u, dx);                                                    %
+% du = ddxO2Su(u, dx, dir);                                               %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Examine whether an input has the logical or numeric data type. Returns  %
-% true if either islogical() or isnumeric() return true.                  %
+% Compute the first derivative of an input array for a uniform spacing in %
+% the specified direction. This function applies the second-order central %
+% finite difference scheme. At the boundaries, a second-order forward or  %
+% backward finite difference scheme is used. The default derivative       %
+% direction is 1. When a vector is being differentiated, the direction is %
+% determined automatically.                                               %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
 %                                                                         %
 % Dependencies:                                                           %
-% N/A                                                                     %
+% mathdim                                                                 %
 %                                                                         %
 % Acknowledgments:                                                        %
 % N/A                                                                     %
@@ -58,13 +63,19 @@
 % ======================================================================= %
 % Input Arguments (Required):                                             %
 % ----------------------------------------------------------------------- %
-% 'S'            ANY INPUT                                                %
-%              ~ Input variable. The data type will be examined for       %
-%                whether it is logical or numeric.                        %
+% 'u'            LOGICAL/NUMERIC N-DIMENSIONAL ARRAY                      %
+%              ~ Input array. Array to be differentiated.                 %
+% ----------------------------------------------------------------------- %
+% 'dx'           NONZERO SCALAR                                           %
+%              ~ Input scalar. Uniform spacing in the direction of the    %
+%                differentiation.                                         %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
-% N/A                                                                     %
+% 'dir'          POSITIVE INTEGER SCALAR                                  %
+%                Default: 1 or vector direction                           %
+%              ~ Input scalar. Direction along which to perform the       %
+%                derivative.                                              %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
@@ -72,72 +83,115 @@
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
-% 'val'          LOGICAL SCALAR                                           %
-%              ~ Output logical scalar. The value will be 1 (true) if the %
-%                input data type is either logical or numeric and 0       %
-%                (false) otherwise.                                       %
+% 'du'           NUMERIC N-DIMENSIONAL ARRAY                              %
+%              ~ Output array. Derivative of the input array in the       %
+%                specified direction.                                     %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Determine whether the array x = [2 Inf NaN 10^-12 -Inf 2*i -3.1] is     %
-% logical or numeric.                                                     %
+% Compute the derivative of the function u = sin(x) on the interval [0,   %
+% pi] using the second-order, central finite difference scheme with a     %
+% grid spacing of pi/50.                                                  %
 %                                                                         %
-% >> x   = [2 Inf NaN 10^-12 -Inf 2*i -3.1];                              %
-% >> val = islogiconum(x);                                                %
-% >> disp(val);                                                           %
-%    1                                                                    %
+% >> dx      = pi/50;                                                     %
+% >> u       = sin(0:dx:pi).';                                            %
+% >> ux_O2   = ddxO2Su(u, dx);                                            %
+% >> ux_TRUE = cos(0:dx:pi).';                                            %
+% >> E2      = abs(ux_O2 - ux_TRUE);                                      %
+% >> disp(max(E2(:)));                                                    %
+%     0.0013                                                              %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 2                                                               %
 %                                                                         %
-% Determine whether the logical array x = logical([0 true 1 false]) is    %
-% logical or numeric.                                                     %
+% Compute the derivative of the function u = y^2*sin(x) with respect to y %
+% on the interval (x,y) = ([0,pi],[0,1]) using the second-order, central  %
+% finite difference scheme with a grid spacing of (pi/50, 0.01).          %
 %                                                                         %
-% >> x   = logical([0 true 1 false]);                                     %
-% >> val = islogiconum(x);                                                %
-% >> disp(val);                                                           %
-%    1                                                                    %
-%                                                                         %
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
-%                                                                         %
-% EXAMPLE 3                                                               %
-%                                                                         %
-% Determine whether the cell array x = {1 NaN 2.4} is logical or numeric. %
-%                                                                         %
-% >> x   = {1 NaN 2.4};                                                   %
-% >> val = islogiconum(x);                                                %
-% >> disp(val);                                                           %
-%    0                                                                    %
+% >> dx      = pi/50;                                                     %
+% >> dy      = 0.01;                                                      %
+% >> x       = (0:dx:pi).';                                               %
+% >> y       = (0:dy:1).';                                                %
+% >> [X,Y]   = ndgrid(x,y);                                               %
+% >> u       = (Y.^2).*sin(X);                                            %
+% >> uy_O2   = ddxO2Su(u, dy, 2);                                         %
+% >> uy_TRUE = 2*Y.*sin(X);                                               %
+% >> E2      = abs(uy_O2 - uy_TRUE);                                      %
+% >> disp(max(E2(:)));                                                    %
+%    3.5083e-14                                                           %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [val] = islogiconum(S)
+function [du] = ddxO2Su(u, dx, varargin)
 
 
 %% PARSE INPUTS
 
 % Input defaults.
-% N/A
+default.dir = 1;
 
 % Input checks.
-% N/A
+check.dir = @(x) validateattributes(x,                                  ...
+                 {'logical', 'numeric'},                                ...
+                 {'finite', 'positive', 'scalar'});
+check.dx  = @(x) validateattributes(x,                                  ...
+                 {'logical', 'numeric'},                                ...
+                 {'finite', 'nonzero', 'scalar'});
+check.u   = @(x) validateattributes(x,                                  ...
+                 {'logical', 'numeric'},                                ...
+                 {'nonempty'});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'S' );
-parse(hParser, S);
+addRequired ( hParser, 'u'   , check.u                 );
+addRequired ( hParser, 'dx'  , check.dx                );
+addOptional ( hParser, 'dir' , default.dir , check.dir );
+parse(hParser, u, dx, varargin{:});
+clear check default;
 
 % Additional verifications.
 nargoutchk(0,1);
 
 
-%% LOGICONUMERIC INTERROGATION
+%% DIFFERENTIATION
 
-% (Is numeric?) OR (Is logical?)
-val = isnumeric(S) | islogical(S);
+% Determine the size of the array.
+sz = size(u);
+
+% Set the derivative direction.
+[dim, dir] = mathdim(u);
+if dim > 1, dir = hParser.Results.dir; end
+
+% Define the permutation order.
+tmp      = 1:ndims(u);
+tmp(dir) = [];
+pm       = [dir tmp];
+clear tmp;
+
+% Initialize the derivative array.
+du = zeros(sz(pm));
+
+% Permute the array that is being differentiated.
+u = permute(u, pm);
+
+% Generate colon index assignments.
+idx = repmat({':'},1,ndims(u)-1);
+
+% Apply 2nd order forward difference at the first boundary.
+du(1,idx{:}) = (-u(3,idx{:}) + 4*u(2,idx{:}) - 3*u(1,idx{:}))/(2*dx);
+
+% Apply 2nd order backward difference at the last boundary.
+du(end,idx{:}) = (u(end-2,idx{:}) - 4*u(end-1,idx{:})                   ...
+               + 3*u(end,idx{:}))/(2*dx);
+
+% Apply 2nd order central difference everywhere in between.
+du(2:end-1,idx{:}) = (u(3:end,idx{:}) - u(1:end-2,idx{:}))/(2*dx);
+
+% Inverse permute the derivative.
+du = ipermute(du, pm);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,12 +218,8 @@ val = isnumeric(S) | islogical(S);
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
-%                     reformatted notes.                                  %
-% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
-% 2021/05/27 -- (GDL) Added simple input parser.                          %
-% 2021/05/27 -- (GDL) Changed affiliation to ÉTS.                         %
-% 2021/02/26 -- (GDL) Beta version of the code finalized.                 %
+% 2022/02/22 -- (GDL) Formatted the code.                                 %
+% 2021/07/30 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %

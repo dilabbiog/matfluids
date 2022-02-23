@@ -17,20 +17,7 @@
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% CHANGE LOG                                                              %
-%                                                                         %
-% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
-% 2021/05/27 -- (GDL) Beta version of the code finalized.                 %
-%                                                                         %
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-%                                                                         %
-% FUTURE UPDATES                                                          %
-%                                                                         %
-% None foreseen at the moment.                                            %
-%                                                                         %
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-%                                                                         %
-% Copyright (C) 2021 Giuseppe Di Labbio                                   %
+% Copyright (C) 2022 Giuseppe Di Labbio                                   %
 %                                                                         %
 % This program is free software: you can redistribute it and/or modify it %
 % under the terms of the GNU General Public License as published by the   %
@@ -135,7 +122,7 @@ nargoutchk(0,1);
 verify.char = ischar(S) & isrow(S);
 
 
-%% YES INTERROGATION
+%% NO INTERROGATION
 
 % If the input is not character (row vector) or string, then it cannot be a
 % form of "no".
@@ -160,18 +147,39 @@ if hParser.Results.all
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%
-
-%#ok<*N/A>
-% Line(s) N/A
-% Message(s)
-% * N/A
-% Reason(s)
-% * N/A
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%                                  NOTES                                  %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % Line(s) N/A                                                             %
 % * N/A                                                                   %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% SUPPRESSED MESSAGES                                                     %
+%                                                                         %
+%#ok<*N/A>                                                                %
+% Line(s) N/A                                                             %
+% Message(s)                                                              %
+% * N/A                                                                   %
+% Reason(s)                                                               %
+% * N/A                                                                   %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% CHANGE LOG                                                              %
+%                                                                         %
+% 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
+%                     reformatted notes.                                  %
+% 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %
+% 2021/05/27 -- (GDL) Beta version of the code finalized.                 %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% FUTURE UPDATES                                                          %
+%                                                                         %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

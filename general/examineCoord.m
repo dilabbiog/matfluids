@@ -17,19 +17,7 @@
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% CHANGE LOG                                                              %
-%                                                                         %
-% 2021/06/06 -- (GDL) Beta version of the code finalized.                 %
-%                                                                         %
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-%                                                                         %
-% FUTURE UPDATES                                                          %
-%                                                                         %
-% None foreseen at the moment.                                            %
-%                                                                         %
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-%                                                                         %
-% Copyright (C) 2021 Giuseppe Di Labbio                                   %
+% Copyright (C) 2022 Giuseppe Di Labbio                                   %
 %                                                                         %
 % This program is free software: you can redistribute it and/or modify it %
 % under the terms of the GNU General Public License as published by the   %
@@ -124,7 +112,7 @@
 % >> coord.y = (0:0.1:5).';                                               %
 % >> coord.x = (-10:0.1:10).';                                            %
 % >> examineCoord(coord);                                                 %
-% Error using examineCoord (line 205)                                     %
+% Error using examineCoord (line 193)                                     %
 % At least one field in the coordinate structure is not in the proper     %
 % order.                                                                  %
 %                                                                         %
@@ -140,7 +128,7 @@
 % >> coord.y = (0:0.1:5).';                                               %
 % >> coord.t = (0:0.1:2).';                                               %
 % >> examineCoord(coord);                                                 %
-% Error using examineCoord (line 233)                                     %
+% Error using examineCoord (line 222)                                     %
 % At least one field in the coordinate structure does not contain a       %
 % strictly monotonically increasing/decreasing real-valued column vector. %
 %                                                                         %
@@ -239,18 +227,38 @@ end
 clear C fields k numFields tmp;
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%
-
-%#ok<*N/A>
-% Line(s) N/A
-% Message(s)
-% * N/A
-% Reason(s)
-% * N/A
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%                                  NOTES                                  %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % Line(s) N/A                                                             %
 % * N/A                                                                   %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% SUPPRESSED MESSAGES                                                     %
+%                                                                         %
+%#ok<*N/A>                                                                %
+% Line(s) N/A                                                             %
+% Message(s)                                                              %
+% * N/A                                                                   %
+% Reason(s)                                                               %
+% * N/A                                                                   %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% CHANGE LOG                                                              %
+%                                                                         %
+% 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
+%                     reformatted notes.                                  %
+% 2021/06/06 -- (GDL) Beta version of the code finalized.                 %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% FUTURE UPDATES                                                          %
+%                                                                         %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

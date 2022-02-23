@@ -17,19 +17,7 @@
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% CHANGE LOG                                                              %
-%                                                                         %
-% 2021/06/06 -- (GDL) Beta version of the code finalized.                 %
-%                                                                         %
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-%                                                                         %
-% FUTURE UPDATES                                                          %
-%                                                                         %
-% None foreseen at the moment.                                            %
-%                                                                         %
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-%                                                                         %
-% Copyright (C) 2021 Giuseppe Di Labbio                                   %
+% Copyright (C) 2022 Giuseppe Di Labbio                                   %
 %                                                                         %
 % This program is free software: you can redistribute it and/or modify it %
 % under the terms of the GNU General Public License as published by the   %
@@ -119,7 +107,7 @@
 % >> vel.v = [1 2 3; 4 5 6; 7 8 9];                                       %
 % >> vel.w = [];                                                          %
 % >> examineVel(vel);                                                     %
-% Error using examineVel (line 242)                                       %
+% Error using examineVel (line 230)                                       %
 % At least one field in the velocity field structure has a different      %
 % array size than the others.                                             %
 %                                                                         %
@@ -141,7 +129,7 @@
 % >> vel.v = [-1 1; -2 2];                                                %
 % >> vel.u = [1 2; 3 4];                                                  %
 % >> examineVel(vel);                                                     %
-% Error using examineVel (line 206)                                       %
+% Error using examineVel (line 194)                                       %
 % At least one field in the velocity field structure is not in the proper %
 % order.                                                                  %
 %                                                                         %
@@ -226,7 +214,7 @@ flag = 1;
 for k = 1:numFields
     % Continue if the velocity component is empty or scalar.
     C(1,k) = isscalar(vel.(fields{k}));
-    if C(1,k) | C(2,k), continue; end
+    if C(1,k) || C(2,k), continue; end
     
     % Obtain the array size of the velocity field component for the first
     % time.
@@ -247,18 +235,38 @@ end
 clear C fields flag k numFields tmp;
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%% SUPPRESS MESSAGES %%%%%%%%%%%%%%%%%%%%%%%%% %%
-
-%#ok<*N/A>
-% Line(s) N/A
-% Message(s)
-% * N/A
-% Reason(s)
-% * N/A
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%                                  NOTES                                  %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % Line(s) N/A                                                             %
 % * N/A                                                                   %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% SUPPRESSED MESSAGES                                                     %
+%                                                                         %
+%#ok<*N/A>                                                                %
+% Line(s) N/A                                                             %
+% Message(s)                                                              %
+% * N/A                                                                   %
+% Reason(s)                                                               %
+% * N/A                                                                   %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% CHANGE LOG                                                              %
+%                                                                         %
+% 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
+%                     reformatted notes.                                  %
+% 2021/06/06 -- (GDL) Beta version of the code finalized.                 %
+%                                                                         %
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+%                                                                         %
+% FUTURE UPDATES                                                          %
+%                                                                         %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
