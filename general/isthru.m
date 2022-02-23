@@ -199,7 +199,6 @@ end
 %                                                                         %
 % SUPPRESSED MESSAGES                                                     %
 %                                                                         %
-%#ok<*N/A>                                                                %
 % Line(s) N/A                                                             %
 % Message(s)                                                              %
 % * N/A                                                                   %
@@ -210,6 +209,7 @@ end
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %
 % 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
 %                     reformatted notes.                                  %
 % 2021/06/04 -- (GDL) Added nargoutchk and future updates comments.       %

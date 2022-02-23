@@ -240,7 +240,6 @@ clear C fields k numFields tmp;
 %                                                                         %
 % SUPPRESSED MESSAGES                                                     %
 %                                                                         %
-%#ok<*N/A>                                                                %
 % Line(s) N/A                                                             %
 % Message(s)                                                              %
 % * N/A                                                                   %
@@ -251,6 +250,7 @@ clear C fields k numFields tmp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %
 % 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
 %                     reformatted notes.                                  %
 % 2021/06/06 -- (GDL) Beta version of the code finalized.                 %

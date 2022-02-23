@@ -274,7 +274,6 @@ du = ipermute(du, pm);
 %                                                                         %
 % SUPPRESSED MESSAGES                                                     %
 %                                                                         %
-%#ok<*N/A>                                                                %
 % Line(s) N/A                                                             %
 % Message(s)                                                              %
 % * N/A                                                                   %
@@ -285,6 +284,7 @@ du = ipermute(du, pm);
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %
 % 2022/02/22 -- (GDL) Formatted the code.                                 %
 % 2021/07/30 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
