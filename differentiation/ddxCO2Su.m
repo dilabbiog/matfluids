@@ -187,12 +187,12 @@ inode = struct('alpha', 1/4, 'beta', 0, 'a', 3/2, 'b', 0, 'c', 0);
 bnode = struct('alpha', 1, 'beta', 0, 'a', -2, 'b', 2, 'c', 0, 'd', 0);
 
 % Define the coefficient and constant matrices.
-n   = sz(dir);
-dl2 = [inode.beta*ones(n-3,1); bnode.beta; 0; 0];
-dl1 = [inode.alpha*ones(n-2,1); bnode.alpha; 0];
-du1 = [0; bnode.alpha; inode.alpha*ones(n-2,1)];
-du2 = [0; 0; bnode.beta; inode.beta*ones(n-3,1)];
-A   = spdiags([dl2 dl1 ones(n,1) du1 du2], -2:2, n, n);
+len   = sz(dir);
+dl2 = [inode.beta*ones(len-3,1); bnode.beta; 0; 0];
+dl1 = [inode.alpha*ones(len-2,1); bnode.alpha; 0];
+du1 = [0; bnode.alpha; inode.alpha*ones(len-2,1)];
+du2 = [0; 0; bnode.beta; inode.beta*ones(len-3,1)];
+A   = spdiags([dl2 dl1 ones(len,1) du1 du2], -2:2, len, len);
 b   = zeros(sz(pm));
 
 % Compute the constant matrix at the first boundary.
@@ -234,6 +234,7 @@ du = ipermute(du, pm);
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/23 -- (GDL) Changed variable name n to len.                     %
 % 2022/02/23 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
