@@ -55,6 +55,7 @@
 % MATLAB R2019b or later.                                                 %
 %                                                                         %
 % Dependencies:                                                           %
+% idNodeidx                                                               %
 % mathdim                                                                 %
 %                                                                         %
 % Acknowledgments:                                                        %
@@ -134,27 +135,6 @@
 % >> E2                = abs(uy_O2 - uy_TRUE);                            %
 % >> disp(max(E2(:)));                                                    %
 %    9.3259e-15                                                           %
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
-%                                                                         %
-% EXAMPLE 3                                                               %
-%                                                                         %
-% Repeat the previous example using sparse matrices (best practice).      %
-%                                                                         %
-% >> dx                = pi/50;                                           %
-% >> dy                = 0.01;                                            %
-% >> x                 = (0:dx:pi).';                                     %
-% >> y                 = (0:dy:1).';                                      %
-% >> [X,Y]             = ndgrid(x,y);                                     %
-% >> geom              = zeros(size(X));                                  %
-% >> geom(5:20,5:20)   = 1;                                               %
-% >> geom(40:45,55:80) = 1;                                               %
-% >> geom              = sparse(logical(geom));                           %
-% >> u                 = geom.*(Y.^2).*sin(X);                            %
-% >> uy_O2             = ddxO2Gu(u, dy, geom, 2);                         %
-% >> uy_TRUE           = 2*geom.*Y.*sin(X);                               %
-% >> E2                = abs(uy_O2 - uy_TRUE);                            %
-% >> disp(max(E2(:)));                                                    %
-%    9.3259e-15                                                           %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -203,37 +183,20 @@ sz = size(u);
 [dim, dir] = mathdim(u);
 if dim > 1, dir = hParser.Results.dir; end
 
-% Define the permutation order.
-tmp      = 1:ndims(u);
-tmp(dir) = [];
-pm       = [dir tmp];
-clear tmp;
+% Permute the input arrays.
+pm = 1:ndims(u);
+if dir > 1
+    pm(dir) = [];
+    pm      = [dir pm];
+    u       = permute(u, pm);
+    geom    = permute(geom, pm);
+end
 
 % Initialize the derivative array.
-du = zeros(sz(pm));
+du = zeros(sz(pm));                                                       %
 
-% Permute the array that is being differentiated and its geometry.
-u    = permute(u, pm);
-geom = permute(geom, pm);
-
-% Find all nonzero elements in the geometry (linear index form).
-idxNZ = find(geom);
-
-% Take the difference of the modulus of the linear indices.
-idxNZm              = mod(idxNZ,sz(dir));
-idxNZm(idxNZm == 0) = sz(dir);
-idxNZd              = [diff(idxNZm); -1];
-
-% Determine all the indices for backward differentiation.
-idx  = (idxNZd ~= 1);
-idxb = idxNZ(idx);
-
-% Determine all the indices for forward differentiation.
-idxf = idxNZ([true; idx(1:end-1)]);
-
-% Determine all the indices for centred differentiation.
-idx  = ~(idx + [true; idx(1:end-1)]);
-idxc = idxNZ(idx);
+% Determine the leading, interior and trailing node indices.
+[idxf, idxc, idxb] = idNodeidx(geom);
 
 % Determine the number of elements in each packet of indices.
 n = idxb - idxf + 1;
@@ -247,6 +210,7 @@ c1 = (n == 2);
 du(idxf(c1)) = (u(idxf(c1)+1) - u(idxf(c1)))/dx;
 
 % When n == 1, the derivative is left to be zero (the initialized value).
+clear idxf;
 
 % Apply 2nd order backward difference at the last boundary.
 du(idxb(c2)) = (u(idxb(c2)-2) - 4*u(idxb(c2)-1) + 3*u(idxb(c2)))/(2*dx);
@@ -254,11 +218,16 @@ du(idxb(c2)) = (u(idxb(c2)-2) - 4*u(idxb(c2)-1) + 3*u(idxb(c2)))/(2*dx);
 % Apply 1st order backward difference at the last boundary.
 du(idxb(c1)) = (u(idxb(c1)) - u(idxb(c1)-1))/dx;
 
+% When n == 1, the derivative is left to be zero (the initialized value).
+clear idxb;
+
 % Apply 2nd order central difference everywhere in between.
 du(idxc) = (u(idxc+1) - u(idxc-1))/(2*dx);
+clear c1 c2 idxc n;
 
 % Inverse permute the derivative.
 du = ipermute(du, pm);
+clear pm;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -267,8 +236,9 @@ du = ipermute(du, pm);
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% Line(s) N/A                                                             %
-% * N/A                                                                   %
+% Line(s) 196                                                             %
+% * When MATLAB creates a sparse function for n-dimensional arrays,       %
+%   initialize du as sparse.                                              %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -284,6 +254,7 @@ du = ipermute(du, pm);
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/25 -- (GDL) Simplified using idNodeidx.                         %
 % 2022/02/23 -- (GDL) Removed tic-toc in example 2.                       %
 % 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %
 % 2022/02/22 -- (GDL) Formatted the code.                                 %
