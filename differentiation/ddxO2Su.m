@@ -165,20 +165,19 @@ sz = size(u);
 [dim, dir] = mathdim(u);
 if dim > 1, dir = hParser.Results.dir; end
 
-% Define the permutation order.
-tmp      = 1:ndims(u);
-tmp(dir) = [];
-pm       = [dir tmp];
-clear tmp;
+% Permute the input array.
+pm = 1:ndims(u);
+if dir > 1
+    pm(dir) = [];
+    pm      = [dir pm];
+    u       = permute(u, pm);
+end
 
 % Initialize the derivative array.
 du = zeros(sz(pm));
 
-% Permute the array that is being differentiated.
-u = permute(u, pm);
-
 % Generate colon index assignments.
-idx = repmat({':'},1,ndims(u)-1);
+idx = repmat({':'}, 1, ndims(u)-1);
 
 % Apply 2nd order forward difference at the first boundary.
 du(1,idx{:}) = (-u(3,idx{:}) + 4*u(2,idx{:}) - 3*u(1,idx{:}))/(2*dx);
@@ -217,6 +216,7 @@ du = ipermute(du, pm);
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/25 -- (GDL) Added an if statement for permuting u.              %
 % 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %
 % 2022/02/22 -- (GDL) Formatted the code.                                 %
 % 2021/07/30 -- (GDL) Beta version of the code finalized.                 %

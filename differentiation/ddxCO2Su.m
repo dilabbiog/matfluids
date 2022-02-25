@@ -168,16 +168,15 @@ sz = size(u);
 if dim > 1, dir = hParser.Results.dir; end
 
 % Define the permutation order.
-tmp      = 1:ndims(u);
-tmp(dir) = [];
-pm       = [dir tmp];
-clear tmp;
+pm = 1:ndims(u);
+if dir > 1
+    pm(dir) = [];
+    pm      = [dir pm];
+    u       = permute(u, pm);
+end
 
 % Initialize the derivative array.
 du = zeros(sz(pm));                                            %#ok<PREALL> 
-
-% Permute the array that is being differentiated.
-u = permute(u, pm);
 
 % Generate colon index assignments.
 idx = repmat({':'},1,ndims(u)-1);
@@ -224,7 +223,7 @@ du = ipermute(du, pm);
 %                                                                         %
 % SUPPRESSED MESSAGES                                                     %
 %                                                                         %
-% Line(s) 177                                                             %
+% Line(s) 179                                                             %
 % Message(s)                                                              %
 % * The preallocated value assigned to variable 'du' might be unused.     %
 % Reason(s)                                                               %
@@ -236,6 +235,7 @@ du = ipermute(du, pm);
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/25 -- (GDL) Added an if statement for permuting u.              %
 % 2022/02/23 -- (GDL) Separated comments for variables A and b.           %
 % 2022/02/23 -- (GDL) Changed variable name n to len.                     %
 % 2022/02/23 -- (GDL) Beta version of the code finalized.                 %
