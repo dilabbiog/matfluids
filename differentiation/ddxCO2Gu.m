@@ -228,7 +228,7 @@ for k = 1:npck
     idx                   = idx + n(k);
 end
 A = spdiags([dl2 dl1 ones(nsum,1) du1 du2], -2:2, nsum, nsum);
-clear idx dl2 dl1 du1 du2;
+clear k idx dl2 dl1 du1 du2;
 
 % Initialize the constant matrix.
 b = zeros(nsum,1);
@@ -241,20 +241,35 @@ for k = 1:npck, bidxc{k} = (bidxf(k)+1:bidxb(k)-1).'; end
 bidxc = cell2mat(bidxc);
 clear k;
 
-% Compute the constant matrix at the first boundary.
-c2 = (n >= 2);
-b(bidxf) = (bnode.a*u(idxf(c2)) + bnode.b*u(idxf(c2)+1))/dx;
+% Establish conditions.
+bC3 = (n >= 3);
+bC2 = (n == 2);
 
-% When n == 1, the derivative is left to be zero (the initialized value).
+% bC3: Compute the constant matrix at these leading nodes.
+b(bidxf(bC3)) = (bnode.a*u(idxf(bC3)) + bnode.b*u(idxf(bC3)+1))/dx;
 
-% Compute the constant matrix at the last boundary.
-b(bidxb) = -(bnode.a*u(idxb(c2)) + bnode.b*u(idxb(c2)-1))/dx;
+% bC3: Compute the constant matrix at these trailing nodes.
+b(bidxb(bC3)) = -(bnode.a*u(idxb(bC3)) + bnode.b*u(idxb(bC3)-1))/dx;
 
-% When n == 1, the derivative is left to be zero (the initialized value).
+% bC2: Impose a first-order scheme at these leading nodes.
+b(bidxf(bC2)) = (u(idxf(bC2)+1) - u(idxf(bC2)))/dx;
+idx = sub2ind(nsum*[1 1], bidxf(bC2), bidxf(bC2));
+A(idx) = 1;
+idx = sub2ind(nsum*[1 1], bidxf(bC2), bidxf(bC2)+1);
+A(idx) = 0;
 
-% Compute the constant matrix everywhere in between.
+% bC2: Impose a first-order scheme at these trailing nodes.
+b(bidxb(bC2)) = (u(idxb(bC2)) - u(idxb(bC2)-1))/dx;
+idx = sub2ind(nsum*[1 1], bidxb(bC2), bidxb(bC2));
+A(idx) = 1;
+idx = sub2ind(nsum*[1 1], bidxb(bC2), bidxb(bC2)-1);
+A(idx) = 0;
+
+% bC1: The derivative is left to be zero (the initialized value).
+
+% iC3: Compute the constant matrix at these interior nodes.
 b(bidxc) = inode.a*(u(idxc+1) - u(idxc-1))/(2*dx);
-clear bnode inode c2 n ncum npck nsum;
+clear bnode inode idx bC2 bC3 n ncum npck nsum;
 
 % Compute the derivative in sparse form.
 spdu = A\b;
@@ -294,6 +309,7 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/28 -- (GDL) Added lower-order scheme for degenerate case.       %
 % 2022/02/28 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
