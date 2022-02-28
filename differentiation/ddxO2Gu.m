@@ -37,7 +37,7 @@
 % SYNTAX                                                                  %
 %                                                                         %
 % du = ddxO2Gu(u, dx, geom);                                              %
-% du = ddxO2Gu(u, dx, geom, dir);                                         %
+% du = ddxO2Gu(u, dx, geom, drc);                                         %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -81,7 +81,7 @@
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
-% 'dir'          POSITIVE INTEGER SCALAR                                  %
+% 'drc'          POSITIVE INTEGER SCALAR                                  %
 %                Default: 1 or vector direction                           %
 %              ~ Input scalar. Direction along which to perform the       %
 %                derivative.                                              %
@@ -145,10 +145,10 @@ function [du] = ddxO2Gu(u, dx, geom, varargin)
 %% PARSE INPUTS
 
 % Input defaults.
-default.dir = 1;
+default.drc = 1;
 
 % Input checks.
-check.dir  = @(x) validateattributes(x,                                 ...
+check.drc  = @(x) validateattributes(x,                                 ...
                   {'logical', 'numeric'},                               ...
                   {'finite', 'positive', 'scalar'});
 check.dx   = @(x) validateattributes(x,                                 ...
@@ -166,7 +166,7 @@ hParser = inputParser;
 addRequired ( hParser, 'u'    , check.u                 );
 addRequired ( hParser, 'dx'   , check.dx                );
 addRequired ( hParser, 'geom' , check.geom              );
-addOptional ( hParser, 'dir'  , default.dir , check.dir );
+addOptional ( hParser, 'drc'  , default.drc , check.drc );
 parse(hParser, u, dx, geom, varargin{:});
 clear check default;
 
@@ -176,24 +176,27 @@ nargoutchk(0,1);
 
 %% DIFFERENTIATION
 
-% Determine the size of the array.
+% Determine the size and number of dimensions of the input array.
 sz = size(u);
+nd = ndims(u);
 
 % Set the derivative direction.
-[dim, dir] = mathdim(u);
-if dim > 1, dir = hParser.Results.dir; end
+[dim, drc] = mathdim(u);
+if dim > 1, drc = hParser.Results.drc; end
+clear dim;
 
 % Permute the input arrays.
-pm = 1:ndims(u);
-if dir > 1
-    pm(dir) = [];
-    pm      = [dir pm];
+pm = 1:nd;
+if drc > 1
+    pm(drc) = [];
+    pm      = [drc pm];
     u       = permute(u, pm);
     geom    = permute(geom, pm);
 end
+szp = sz(pm);
 
 % Initialize the derivative array.
-du = zeros(sz(pm));                                                       %
+du = zeros(szp);                                                          %
 
 % Determine the leading, interior and trailing node indices.
 [idxf, idxc, idxb] = idNodeidx(geom);
@@ -223,11 +226,11 @@ clear idxb;
 
 % Apply 2nd order central difference everywhere in between.
 du(idxc) = (u(idxc+1) - u(idxc-1))/(2*dx);
-clear c1 c2 idxc n;
+clear idxc c1 c2 n;
 
 % Inverse permute the derivative.
 du = ipermute(du, pm);
-clear pm;
+clear drc nd pm sz szp;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -236,7 +239,7 @@ clear pm;
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% Line(s) 196                                                             %
+% Line(s) 199                                                             %
 % * When MATLAB creates a sparse function for n-dimensional arrays,       %
 %   initialize du as sparse.                                              %
 %                                                                         %
@@ -254,6 +257,7 @@ clear pm;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/28 -- (GDL) Changed variable name: dir -> drc.                  %
 % 2022/02/25 -- (GDL) Simplified using idNodeidx.                         %
 % 2022/02/23 -- (GDL) Removed tic-toc in example 2.                       %
 % 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %

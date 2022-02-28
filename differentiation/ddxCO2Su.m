@@ -37,7 +37,7 @@
 % SYNTAX                                                                  %
 %                                                                         %
 % du = ddxCO2Su(u, dx);                                                   %
-% du = ddxCO2Su(u, dx, dir);                                              %
+% du = ddxCO2Su(u, dx, drc);                                              %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -74,7 +74,7 @@
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
-% 'dir'          POSITIVE INTEGER SCALAR                                  %
+% 'drc'          POSITIVE INTEGER SCALAR                                  %
 %                Default: 1 or vector direction                           %
 %              ~ Input scalar. Direction along which to perform the       %
 %                derivative.                                              %
@@ -133,10 +133,10 @@ function [du] = ddxCO2Su(u, dx, varargin)
 %% PARSE INPUTS
 
 % Input defaults.
-default.dir = 1;
+default.drc = 1;
 
 % Input checks.
-check.dir = @(x) validateattributes(x,                                  ...
+check.drc = @(x) validateattributes(x,                                  ...
                  {'logical', 'numeric'},                                ...
                  {'finite', 'positive', 'scalar'});
 check.dx  = @(x) validateattributes(x,                                  ...
@@ -150,7 +150,7 @@ check.u   = @(x) validateattributes(x,                                  ...
 hParser = inputParser;
 addRequired ( hParser, 'u'   , check.u                 );
 addRequired ( hParser, 'dx'  , check.dx                );
-addOptional ( hParser, 'dir' , default.dir , check.dir );
+addOptional ( hParser, 'drc' , default.drc , check.drc );
 parse(hParser, u, dx, varargin{:});
 clear check default;
 
@@ -160,33 +160,36 @@ nargoutchk(0,1);
 
 %% DIFFERENTIATION
 
-% Determine the size of the array.
+% Determine the size and number of dimensions of the input array.
 sz = size(u);
+nd = ndims(u);
 
 % Set the derivative direction.
-[dim, dir] = mathdim(u);
-if dim > 1, dir = hParser.Results.dir; end
+[dim, drc] = mathdim(u);
+if dim > 1, drc = hParser.Results.drc; end
+len = sz(drc);
+clear dim;
 
 % Define the permutation order.
-pm = 1:ndims(u);
-if dir > 1
-    pm(dir) = [];
-    pm      = [dir pm];
+pm = 1:nd;
+if drc > 1
+    pm(drc) = [];
+    pm      = [drc pm];
     u       = permute(u, pm);
 end
+szp = sz(pm);
 
 % Initialize the derivative array.
-du = zeros(sz(pm));                                            %#ok<PREALL> 
+du = zeros(szp);                                               %#ok<PREALL>
 
 % Generate colon index assignments.
-idx = repmat({':'},1,ndims(u)-1);
+idx = repmat({':'},1,nd-1);
 
 % Define the compact scheme constants for interior and boundary nodes.
 inode = struct('alpha', 1/4, 'beta', 0, 'a', 3/2, 'b', 0, 'c', 0);
 bnode = struct('alpha', 1, 'beta', 0, 'a', -2, 'b', 2, 'c', 0, 'd', 0);
 
 % Define the coefficient matrix.
-len   = sz(dir);
 dl2 = [inode.beta*ones(len-3,1); bnode.beta; 0; 0];
 dl1 = [inode.alpha*ones(len-2,1); bnode.alpha; 0];
 du1 = [0; bnode.alpha; inode.alpha*ones(len-2,1)];
@@ -194,7 +197,7 @@ du2 = [0; 0; bnode.beta; inode.beta*ones(len-3,1)];
 A   = spdiags([dl2 dl1 ones(len,1) du1 du2], -2:2, len, len);
 
 % Initialize the constant matrix.
-b = zeros(sz(pm));
+b = zeros(szp);
 
 % Compute the constant matrix at the first boundary.
 b(1,idx{:}) = (bnode.a*u(1,idx{:}) + bnode.b*u(2,idx{:}))/dx;
@@ -208,6 +211,7 @@ b(2:end-1,idx{:}) = inode.a*(u(3:end,idx{:}) - u(1:end-2,idx{:}))/(2*dx);
 % Compute and inverse permute the derivative.
 du = A\b;
 du = ipermute(du, pm);
+clear drc len nd pm sz szp;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -223,7 +227,7 @@ du = ipermute(du, pm);
 %                                                                         %
 % SUPPRESSED MESSAGES                                                     %
 %                                                                         %
-% Line(s) 179                                                             %
+% Line(s) 183                                                             %
 % Message(s)                                                              %
 % * The preallocated value assigned to variable 'du' might be unused.     %
 % Reason(s)                                                               %
@@ -235,6 +239,7 @@ du = ipermute(du, pm);
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/28 -- (GDL) Changed variable name: dir -> drc.                  %
 % 2022/02/25 -- (GDL) Added an if statement for permuting u.              %
 % 2022/02/23 -- (GDL) Separated comments for variables A and b.           %
 % 2022/02/23 -- (GDL) Changed variable name n to len.                     %

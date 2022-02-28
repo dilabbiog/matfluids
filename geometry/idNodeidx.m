@@ -37,7 +37,7 @@
 % SYNTAX                                                                  %
 %                                                                         %
 % [idxl, idxi, idxt] = idNodeidx(geom);                                   %
-% [idxl, idxi, idxt] = idNodeidx(geom, dir);                              %
+% [idxl, idxi, idxt] = idNodeidx(geom, drc);                              %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -68,7 +68,7 @@
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
-% 'dir'          POSITIVE INTEGER SCALAR                                  %
+% 'drc'          POSITIVE INTEGER SCALAR                                  %
 %                Default: 1                                               %
 %              ~ Input scalar. Direction along which to list the indices. %
 % ======================================================================= %
@@ -116,7 +116,7 @@
 % EXAMPLE 3                                                               %
 %                                                                         %
 % Determine the leading, interior and trailing nodes for a geometry       %
-% defined in two dimensions. List in the indices in the order they appear %
+% defined in two dimensions. List the indices in the order they appear    %
 % along the second dimension.                                             %
 %                                                                         %
 % >> geom               = zeros(51, 101);                                 %
@@ -133,10 +133,10 @@ function [idxl, idxi, idxt] = idNodeidx(geom, varargin)
 %% PARSE INPUTS
 
 % Input defaults.
-default.dir = 1;
+default.drc = 1;
 
 % Input checks.
-check.dir  = @(x) validateattributes(x,                                 ...
+check.drc  = @(x) validateattributes(x,                                 ...
                   {'logical', 'numeric'},                               ...
                   {'finite', 'positive', 'scalar'});
 check.geom = @(x) validateattributes(x,                                 ...
@@ -146,7 +146,7 @@ check.geom = @(x) validateattributes(x,                                 ...
 % Parse the inputs.
 hParser = inputParser;
 addRequired ( hParser, 'geom' , check.geom              );
-addOptional ( hParser, 'dir'  , default.dir , check.dir );
+addOptional ( hParser, 'drc'  , default.drc , check.drc );
 parse(hParser, geom, varargin{:});
 clear check default;
 
@@ -156,74 +156,76 @@ nargoutchk(0,3);
 
 %% INDEX SEARCH
 
-% Determine the size of the array.
+% Determine the size and number of dimensions of the input array.
 sz = size(geom);
+nd = ndims(geom);
 
-% Set the search direction.
-dir = hParser.Results.dir;
+% Define the search direction and its length.
+drc = hParser.Results.drc;
+len = sz(drc);
 
-% Permute the geometry array.
-pm = 1:ndims(geom);
-if dir > 1
-    pm(dir) = [];
-    pm      = [dir pm];
+% Permute the input array.
+pm = 1:nd;
+if drc > 1
+    pm(drc) = [];
+    pm      = [drc pm];
     geom    = permute(geom, pm);
 end
+szp = sz(pm);
 
-% Find all nonzero elements in the geometry array (linear index form).
+% Find all nonzero elements in the input array (linear index form).
 idxNZ = find(geom);
 
 % Take the differences of the linear indices.
 % +1 ==> consecutive node or array-bounded trailing node
-% >1 ==> geometry-bounded trailing node
-cond = diff(idxNZ);
+% >1 ==> geometry- or array-bounded trailing node
+id = diff(idxNZ);
 
-% Identify geometry-bounded trailing nodes with a 2. the last
-% node with a zero as well (forcibly a trailing node).
-cond(cond > 1) = 2;
+% Identify known trailing nodes with a 2.
+id(id > 1) = 2;
 
 % Identify the last node, which is forcibly a trailing node, with a 2.
-cond = [cond; 2];
+id = [id; 2];
 
 % Identify array-bounded trailing nodes with a 2.
-cond(mod(idxNZ,sz(dir)) == 0) = 2;
+id(mod(idxNZ,len) == 0) = 2;
 
 % Identify the leading nodes with a 0. The first node is forcibly a leading
 % node. Nodes immediately following trailing nodes are also leading nodes.
-tmp                        = (cond == 2);
-cond([true; tmp(1:end-1)]) = 0;
+tmp                      = (id == 2);
+id([true; tmp(1:end-1)]) = 0;
 clear tmp;
 
 % Define the leading, interior and trailing nodes.
-idxl = idxNZ(cond == 0);
-idxi = idxNZ(cond == 1);
-idxt = idxNZ(cond == 2);
-clear cond idxNZ;
+idxl = idxNZ(id == 0);
+idxi = idxNZ(id == 1);
+idxt = idxNZ(id == 2);
+clear id idxNZ;
 
 % Determine the linear indices for the unpermuted geometry array.
-if dir > 1
+if drc > 1
     % Leading node indices.
-    subl      = cell(ndims(geom),1);
-    [subl{:}] = ind2sub(sz(pm), idxl);
+    subl      = cell(nd,1);
+    [subl{:}] = ind2sub(szp, idxl);
     subl      = [subl(2:pm); subl(1); subl(pm+1:end)];
     idxl      = sub2ind(sz, subl{:});
     clear subl;
     
     % Interior node indices.
-    subi      = cell(ndims(geom),1);
-    [subi{:}] = ind2sub(sz(pm), idxi);
+    subi      = cell(nd,1);
+    [subi{:}] = ind2sub(szp, idxi);
     subi      = [subi(2:pm); subi(1); subi(pm+1:end)];
     idxi      = sub2ind(sz, subi{:});
     clear subi;
     
     % Trailing node indices.
-    subt      = cell(ndims(geom),1);
-    [subt{:}] = ind2sub(sz(pm), idxt);
+    subt      = cell(nd,1);
+    [subt{:}] = ind2sub(szp, idxt);
     subt      = [subt(2:pm); subt(1); subt(pm+1:end)];
     idxt      = sub2ind(sz, subt{:});
     clear subt;
 end
-clear dir pm sz;
+clear drc len nd pm sz szp;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -249,6 +251,7 @@ clear dir pm sz;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/02/28 -- (GDL) Changed variable names: dir, cond -> drc, id.       %
 % 2022/02/25 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
