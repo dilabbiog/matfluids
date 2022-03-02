@@ -4,7 +4,7 @@
 %                                                                         %
 % idNodeidx                                                               %
 % Node Property Identification                                            %
-% Examine geometry for indices of leading, trailing and interior nodes    %
+% Examine geometry for indices of leading, interior and trailing nodes    %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -36,16 +36,17 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% [idxl, idxi, idxt] = idNodeidx(geom);                                   %
-% [idxl, idxi, idxt] = idNodeidx(geom, drc);                              %
+% [idxl, idxi, idxt, idxs] = idNodeidx(geom);                             %
+% [idxl, idxi, idxt, idxs] = idNodeidx(geom, drc);                        %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
 % Determine the linear indices of the leading, interior and trailing      %
-% nodes of an input array. By default, the indices are listed in the      %
-% order they appear along the first dimension (since this is how linear   %
-% indices are counted by MATLAB). Alternatively, the indices may be       %
-% listed in the order they appear along a different direction.            %
+% nodes of an input array as well as any singular nodes. By default, the  %
+% indices are listed in the order they appear along the first dimension,  %
+% since this is how linear indices are counted by MATLAB. Alternatively,  %
+% the indices may be listed in the order they appear along a different    %
+% direction.                                                              %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -89,6 +90,10 @@
 % 'idxt'         NUMERIC COLUMN VECTOR                                    %
 %              ~ Output array. List of linear indices of trailing nodes   %
 %                in the order they appear along a specified direction.    %
+% ----------------------------------------------------------------------- %
+% 'idxs'         NUMERIC COLUMN VECTOR                                    %
+%              ~ Output array. List of linear indices of singular nodes   %
+%                in the order they appear along a specified direction.    %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
@@ -96,8 +101,8 @@
 % Determine the leading, interior and trailing nodes for a geometry       %
 % defined in one dimension.                                               %
 %                                                                         %
-% >> geom               = [ones(20,1); zeros(10,1); ones(6,1)];           %
-% >> [idxl, idxi, idxt] = idNodeidx(geom);                                %
+% >> geom                     = [ones(20,1); zeros(10,1); ones(6,1)];     %
+% >> [idxl, idxi, idxt, idxs] = idNodeidx(geom);                          %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
@@ -106,10 +111,10 @@
 % Determine the leading, interior and trailing nodes for a geometry       %
 % defined in two dimensions.                                              %
 %                                                                         %
-% >> geom               = zeros(51, 101);                                 %
-% >> geom(5:20,5:20)    = 1;                                              %
-% >> geom(40:45,55:80)  = 1;                                              %
-% >> [idxl, idxi, idxt] = idNodeidx(geom, 1);                             %
+% >> geom                     = zeros(51, 101);                           %
+% >> geom(5:20,5:20)          = 1;                                        %
+% >> geom(40:45,55:80)        = 1;                                        %
+% >> [idxl, idxi, idxt, idxs] = idNodeidx(geom, 1);                       %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
@@ -119,15 +124,15 @@
 % defined in two dimensions. List the indices in the order they appear    %
 % along the second dimension.                                             %
 %                                                                         %
-% >> geom               = zeros(51, 101);                                 %
-% >> geom(5:20,5:20)    = 1;                                              %
-% >> geom(40:45,55:80)  = 1;                                              %
-% >> [idxl, idxi, idxt] = idNodeidx(geom, 2);                             %
+% >> geom                     = zeros(51, 101);                           %
+% >> geom(5:20,5:20)          = 1;                                        %
+% >> geom(40:45,55:80)        = 1;                                        %
+% >> [idxl, idxi, idxt, idxs] = idNodeidx(geom, 2);                       %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [idxl, idxi, idxt] = idNodeidx(geom, varargin)
+function [idxl, idxi, idxt, idxs] = idNodeidx(geom, varargin)
 
 
 %% PARSE INPUTS
@@ -136,12 +141,12 @@ function [idxl, idxi, idxt] = idNodeidx(geom, varargin)
 default.drc = 1;
 
 % Input checks.
-check.drc  = @(x) validateattributes(x,                                 ...
-                  {'logical', 'numeric'},                               ...
-                  {'finite', 'positive', 'scalar'});
 check.geom = @(x) validateattributes(x,                                 ...
                   {'logical', 'numeric'},                               ...
                   {'nonempty', 'binary'});
+check.drc  = @(x) validateattributes(x,                                 ...
+                  {'logical', 'numeric'},                               ...
+                  {'finite', 'positive', 'scalar'});
 
 % Parse the inputs.
 hParser = inputParser;
@@ -151,7 +156,7 @@ parse(hParser, geom, varargin{:});
 clear check default;
 
 % Additional verifications.
-nargoutchk(0,3);
+nargoutchk(0,4);
 
 
 %% INDEX SEARCH
@@ -173,34 +178,58 @@ if drc > 1
 end
 szp = sz(pm);
 
-% Find all nonzero elements in the input array (linear index form).
-idxNZ = find(geom);
+% Strategy:
+% 1) Find all nonzero elements of the input array in linear index form.
+%    These represent all the nodes in the permuted geometry in the order
+%    they appear moving down column by column.
+     idxNZ = find(geom);
+% 2) Compute the differences between successive nodes in "next - current"
+%    form.
+     id = [diff(idxNZ); 0];
+% 3) All leading nodes and interior nodes are identified with +1. There is
+%    also a false positive case identified with +1, namely, when a node is
+%    at the end of the column (modulo len) and a subsequent node exists at
+%    the beginning of the next column. This false positive is corrected in
+%    step 4b.
+% 4) Identify all possible trailing and singular nodes with 0. These
+%    include:
+%    a) All nodes identified with a value >1.
+        id(id > 1) = 0;
+%    b) All nodes bounded by the array.
+        id(mod(idxNZ,len) == 0) = 0;
+%    c) The last node. This node has already been set to 0 in step 2 to
+%       have the differences in "next - current" form.
+% 5) Compute the differences between the successive id values of the nodes,
+%    this time in "current - previous" form. Note that the very first node
+%    can either be a leading node (id = 1) or a singular node (id = 0). In
+%    order to account for the first node in step 6a, when shifting the
+%    differences down one index ("current - previous" form), use the actual
+%    value of the first node.
+     idd = [id(1); diff(id)];
+% 6) All leading and trailing nodes can now be identified.
+%    a) When a current node has id = 1 and a previous node has id = 0, the
+%       current node must be a leading node and the difference will have a
+%       value of +1. Distinguish these nodes using a value of 2.
+        id(idd == 1) = 2;
+%    b) When a current node has id = 0 and a previous node has id = 1, the
+%       current node must be a trailing node and the difference will have a
+%       value of -1. Distinguish these nodes using a value of 3.
+        id(idd == -1) = 3;
+%    c) When a current node has id = 0 and a previous node has id = 0, the
+%       current node must be a singular node and the difference will have a
+%       value of 0. These nodes are already identified by 0, id remains
+%       unchanged.
+%    d) When a current node has id = 1 and a previous node has id = 1, the
+%       current node must be an interior node and the difference will have
+%       a value of 0. These nodes are already identified by 1, id remains
+%       unchanged.
 
-% Take the differences of the linear indices.
-% +1 ==> consecutive node or array-bounded trailing node
-% >1 ==> geometry- or array-bounded trailing node
-id = diff(idxNZ);
-
-% Identify known trailing nodes with a 2.
-id(id > 1) = 2;
-
-% Identify the last node, which is forcibly a trailing node, with a 2.
-id = [id; 2];
-
-% Identify array-bounded trailing nodes with a 2.
-id(mod(idxNZ,len) == 0) = 2;
-
-% Identify the leading nodes with a 0. The first node is forcibly a leading
-% node. Nodes immediately following trailing nodes are also leading nodes.
-tmp                      = (id == 2);
-id([true; tmp(1:end-1)]) = 0;
-clear tmp;
-
-% Define the leading, interior and trailing nodes.
-idxl = idxNZ(id == 0);
+% Define the leading, interior, trailing and singular nodes.
+idxl = idxNZ(id == 2);
 idxi = idxNZ(id == 1);
-idxt = idxNZ(id == 2);
-clear id idxNZ;
+idxt = idxNZ(id == 3);
+idxs = idxNZ(id == 0);
+clear id idd idxNZ;
 
 % Determine the linear indices for the unpermuted geometry array.
 if drc > 1
@@ -224,6 +253,13 @@ if drc > 1
     subt      = [subt(2:pm); subt(1); subt(pm+1:end)];
     idxt      = sub2ind(sz, subt{:});
     clear subt;
+
+    % Singular node indices.
+    subs      = cell(nd,1);
+    [subs{:}] = ind2sub(szp, idxs);
+    subs      = [subs(2:pm); subs(1); subs(pm+1:end)];
+    idxs      = sub2ind(sz, subs{:});
+    clear subs;
 end
 clear drc len nd pm sz szp;
 
@@ -251,6 +287,7 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/02 -- (GDL) Added missing support for singular nodes.           %
 % 2022/02/28 -- (GDL) Changed variable names: dir, cond -> drc, id.       %
 % 2022/02/25 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
