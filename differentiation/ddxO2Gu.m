@@ -199,7 +199,7 @@ szp = sz(pm);
 du = zeros(szp);                                                          %
 
 % Determine the leading, interior and trailing node indices.
-[idxf, idxc, idxb] = idNodeidx(geom);
+[idxf, idxc, idxb, ~] = idNodeidx(geom);
 
 % Determine the number of elements in each packet of indices.
 n = idxb - idxf + 1;
@@ -257,6 +257,7 @@ clear drc nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/02 -- (GDL) Added missing support for singular nodes.           %
 % 2022/02/28 -- (GDL) Changed input check order.                          %
 % 2022/02/28 -- (GDL) Changed variable name: dir -> drc.                  %
 % 2022/02/25 -- (GDL) Simplified using idNodeidx.                         %
