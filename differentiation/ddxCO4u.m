@@ -2,9 +2,9 @@
 %                                                                         %
 %                         DIFFERENTIATION TOOLBOX                         %
 %                                                                         %
-% ddxCO2Su                                                                %
+% ddxCO4Su                                                                %
 % Compact Difference Derivative                                           %
-% First derivative, second-order error, uniform spacing                   %
+% First derivative, fourth-order error, uniform spacing                   %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -36,15 +36,15 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% du = ddxCO2Su(u, dx);                                                   %
-% du = ddxCO2Su(u, dx, drc);                                              %
+% du = ddxCO4Su(u, dx);                                                   %
+% du = ddxCO4Su(u, dx, drc);                                              %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
 % Compute the first derivative of an input array for a uniform spacing in %
-% the specified direction. This function applies the classical second-    %
+% the specified direction. This function applies the classical fourth-    %
 % order compact (or Padé) finite difference scheme described in [1]. At   %
-% the boundaries, a second-order forward or backward compact difference   %
+% the boundaries, a fourth-order forward or backward compact difference   %
 % scheme is used. The default derivative direction is 1. When a vector is %
 % being differentiated, the direction is determined automatically.        %
 %                                                                         %
@@ -93,15 +93,15 @@
 % EXAMPLE 1                                                               %
 %                                                                         %
 % Compute the derivative of the function u = sin(x) on the interval [0,   %
-% pi] using the classical second-order compact difference scheme with a   %
+% pi] using the classical fourth-order compact difference scheme with a   %
 % grid spacing of pi/50.                                                  %
 %                                                                         %
 % >> dx      = pi/50;                                                     %
 % >> u       = sin(0:dx:pi).';                                            %
-% >> ux_O2   = ddxCO2Su(u, dx);                                           %
+% >> ux_O4   = ddxCO4Su(u, dx);                                           %
 % >> ux_TRUE = cos(0:dx:pi).';                                            %
-% >> E2      = abs(ux_O2 - ux_TRUE);                                      %
-% >> disp(max(E2(:)));                                                    %
+% >> E4      = abs(ux_O4 - ux_TRUE);                                      %
+% >> disp(max(E4(:)));                                                    %
 %     8.9843e-04                                                          %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
@@ -109,7 +109,7 @@
 % EXAMPLE 2                                                               %
 %                                                                         %
 % Compute the derivative of the function u = y^2*sin(x) with respect to y %
-% on the interval (x,y) = ([0,pi],[0,1]) using the classical second-order %
+% on the interval (x,y) = ([0,pi],[0,1]) using the classical fourth-order %
 % compact difference scheme with a grid spacing of (pi/50, 0.01).         %
 %                                                                         %
 % >> dx      = pi/50;                                                     %
@@ -118,16 +118,16 @@
 % >> y       = (0:dy:1).';                                                %
 % >> [X,Y]   = ndgrid(x,y);                                               %
 % >> u       = (Y.^2).*sin(X);                                            %
-% >> uy_O2   = ddxCO2Su(u, dy, 2);                                        %
+% >> uy_O4   = ddxCO4Su(u, dy, 2);                                        %
 % >> uy_TRUE = 2*Y.*sin(X);                                               %
-% >> E2      = abs(uy_O2 - uy_TRUE);                                      %
-% >> disp(max(E2(:)));                                                    %
+% >> E4      = abs(uy_O4 - uy_TRUE);                                      %
+% >> disp(max(E4(:)));                                                    %
 %    1.8208e-14                                                           %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [du] = ddxCO2Su(u, dx, varargin)
+function [du] = ddxCO4u(u, dx, varargin)
 
 
 %% PARSE INPUTS
@@ -239,6 +239,7 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/02 -- (GDL) Changed function name (it is fourth order).         %
 % 2022/02/28 -- (GDL) Changed input check order.                          %
 % 2022/02/28 -- (GDL) Changed variable name: dir -> drc.                  %
 % 2022/02/25 -- (GDL) Added an if statement for permuting u.              %
