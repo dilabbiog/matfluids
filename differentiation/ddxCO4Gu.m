@@ -2,9 +2,9 @@
 %                                                                         %
 %                         DIFFERENTIATION TOOLBOX                         %
 %                                                                         %
-% ddxCO2Gu                                                                %
+% ddxCO4Gu                                                                %
 % Compact Difference Derivative                                           %
-% First derivative, second-order error, geometry, uniform spacing         %
+% First derivative, fourth-order error, geometry, uniform spacing         %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -36,17 +36,17 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% du = ddxCO2Gu(u, dx, geom);                                             %
-% du = ddxCO2Gu(u, dx, geom, drc);                                        %
+% du = ddxCO4Gu(u, dx, geom);                                             %
+% du = ddxCO4Gu(u, dx, geom, drc);                                        %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
 % Compute the first derivative of an input array associated with a        %
 % geometry for a uniform spacing in the specified direction. This         %
-% function applies the classical second-order compact (or Padé) finite    %
-% difference scheme described in [1]. At the boundaries, a second-order   %
+% function applies the classical fourth-order compact (or Padé) finite    %
+% difference scheme described in [1]. At the boundaries, a fourth-order   %
 % forward or backward compact difference scheme is used. In cases where   %
-% there are not enough points to apply the second-order scheme, this      %
+% there are not enough points to apply the fourth-order scheme, this      %
 % function successively switches to lower-order schemes. If there are not %
 % enough points for the lower-order schemes, the derivative is simply set %
 % to zero. The default derivative direction is 1. When a vector is being  %
@@ -103,16 +103,16 @@
 % EXAMPLE 1                                                               %
 %                                                                         %
 % Compute the derivative of the function u = sin(x) on the interval [0,   %
-% pi] within some defined geometrical bounds using the classical second-  %
+% pi] within some defined geometrical bounds using the classical fourth-  %
 % order compact difference scheme with a grid spacing of pi/50.           %
 %                                                                         %
 % >> dx      = pi/50;                                                     %
 % >> geom    = [ones(20,1); zeros(10,1); ones(6,1); zeros(15,1)];         %
 % >> u       = geom.*(sin(0:dx:pi).');                                    %
-% >> ux_O2   = ddxCO2Gu(u, dx, geom);                                     %
+% >> ux_O4   = ddxCO4Gu(u, dx, geom);                                     %
 % >> ux_TRUE = geom.*(cos(0:dx:pi).');                                    %
-% >> E2      = abs(ux_O2 - ux_TRUE);                                      %
-% >> disp(max(E2(:)));                                                    %
+% >> E4      = abs(ux_O4 - ux_TRUE);                                      %
+% >> disp(max(E4(:)));                                                    %
 %    8.9843e-04                                                           %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
@@ -121,7 +121,7 @@
 %                                                                         %
 % Compute the derivative of the function u = y^2*sin(x) with respect to y %
 % on the interval (x,y) = ([0,pi],[0,1]) within some defined geometrical  %
-% bounds using the classical second-order compact difference scheme with  %
+% bounds using the classical fourth-order compact difference scheme with  %
 % a grid spacing of (pi/50, 0.01).                                        %
 %                                                                         %
 % >> dx                = pi/50;                                           %
@@ -133,16 +133,16 @@
 % >> geom(5:20,5:20)   = 1;                                               %
 % >> geom(40:45,55:80) = 1;                                               %
 % >> u                 = geom.*(Y.^2).*sin(X);                            %
-% >> uy_O2             = ddxCO2Gu(u, dy, geom, 2);                        %
+% >> uy_O4             = ddxCO4Gu(u, dy, geom, 2);                        %
 % >> uy_TRUE           = 2*geom.*Y.*sin(X);                               %
-% >> E2                = abs(uy_O2 - uy_TRUE);                            %
-% >> disp(max(E2(:)));                                                    %
+% >> E4                = abs(uy_O4 - uy_TRUE);                            %
+% >> disp(max(E4(:)));                                                    %
 %    6.4393e-15                                                           %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [du] = ddxCO2Gu(u, dx, geom, varargin)
+function [du] = ddxCO4Gu(u, dx, geom, varargin)
 
 
 %% PARSE INPUTS
@@ -309,6 +309,7 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/02 -- (GDL) Changed function name (it is fourth order).         %
 % 2022/03/02 -- (GDL) Added missing support for singular nodes.           %
 % 2022/02/28 -- (GDL) Added lower-order scheme for degenerate case.       %
 % 2022/02/28 -- (GDL) Beta version of the code finalized.                 %
