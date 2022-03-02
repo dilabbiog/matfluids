@@ -245,7 +245,7 @@ for k = 1:npck, bidxc{k} = (bidxf(k)+1:bidxb(k)-1).'; end
 bidxc = cell2mat(bidxc);
 clear k;
 
-% Establish conditions for boundary nodes.
+% Establish conditions.
 bC4 = (n >  4);
 bC3 = (n == 4);
 bC2 = (n == 3);
@@ -329,7 +329,6 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2022/03/02 -- (GDL) Adjusted lower-order boundary schemes.              %
 % 2022/03/02 -- (GDL) Changed function name (it is fourth order).         %
 % 2022/03/02 -- (GDL) Added missing support for singular nodes.           %
 % 2022/02/28 -- (GDL) Added lower-order scheme for degenerate case.       %

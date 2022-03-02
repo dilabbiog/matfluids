@@ -2,7 +2,7 @@
 %                                                                         %
 %                         DIFFERENTIATION TOOLBOX                         %
 %                                                                         %
-% ddxCO4Su                                                                %
+% ddxCO4u                                                                 %
 % Compact Difference Derivative                                           %
 % First derivative, fourth-order error, uniform spacing                   %
 %                                                                         %
@@ -36,8 +36,8 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% du = ddxCO4Su(u, dx);                                                   %
-% du = ddxCO4Su(u, dx, drc);                                              %
+% du = ddxCO4u(u, dx);                                                    %
+% du = ddxCO4u(u, dx, drc);                                               %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -98,11 +98,11 @@
 %                                                                         %
 % >> dx      = pi/50;                                                     %
 % >> u       = sin(0:dx:pi).';                                            %
-% >> ux_O4   = ddxCO4Su(u, dx);                                           %
+% >> ux_O4   = ddxCO4u(u, dx);                                            %
 % >> ux_TRUE = cos(0:dx:pi).';                                            %
 % >> E4      = abs(ux_O4 - ux_TRUE);                                      %
 % >> disp(max(E4(:)));                                                    %
-%     8.9843e-04                                                          %
+%    2.2836e-06                                                           %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
@@ -118,11 +118,11 @@
 % >> y       = (0:dy:1).';                                                %
 % >> [X,Y]   = ndgrid(x,y);                                               %
 % >> u       = (Y.^2).*sin(X);                                            %
-% >> uy_O4   = ddxCO4Su(u, dy, 2);                                        %
+% >> uy_O4   = ddxCO4u(u, dy, 2);                                         %
 % >> uy_TRUE = 2*Y.*sin(X);                                               %
 % >> E4      = abs(uy_O4 - uy_TRUE);                                      %
 % >> disp(max(E4(:)));                                                    %
-%    1.8208e-14                                                           %
+%    2.5135e-13                                                           %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -187,7 +187,17 @@ idx = repmat({':'},1,nd-1);
 
 % Define the compact scheme constants for interior and boundary nodes.
 inode = struct('alpha', 1/4, 'beta', 0, 'a', 3/2, 'b', 0, 'c', 0);
-bnode = struct('alpha', 1, 'beta', 0, 'a', -2, 'b', 2, 'c', 0, 'd', 0);
+switch len
+    case 4    % 3rd-order compact scheme 
+        bnode = struct('alpha', 2, 'beta', 0,                           ...
+                       'a', -5/2, 'b', 2, 'c', 1/2, 'd', 0);
+    case 3    % 2nd-order compact scheme
+        bnode = struct('alpha', 1, 'beta', 0,                           ...
+                       'a', -2, 'b', 2, 'c', 0, 'd', 0);
+    otherwise % 4th-order compact scheme
+        bnode = struct('alpha', 3, 'beta', 0,                           ...
+                       'a', -17/6, 'b', 3/2, 'c', 3/2, 'd', -1/6);
+end
 
 % Define the coefficient matrix.
 dl2 = [inode.beta*ones(len-3,1); bnode.beta; 0; 0];
@@ -195,21 +205,27 @@ dl1 = [inode.alpha*ones(len-2,1); bnode.alpha; 0];
 du1 = [0; bnode.alpha; inode.alpha*ones(len-2,1)];
 du2 = [0; 0; bnode.beta; inode.beta*ones(len-3,1)];
 A   = spdiags([dl2 dl1 ones(len,1) du1 du2], -2:2, len, len);
+clear dl2 dl1 du1 du2;
 
 % Initialize the constant matrix.
 b = zeros(szp);
 
 % Compute the constant matrix at the first boundary.
-b(1,idx{:}) = (bnode.a*u(1,idx{:}) + bnode.b*u(2,idx{:}))/dx;
+b(1,idx{:}) = (bnode.a*u(1,idx{:}) + bnode.b*u(2,idx{:})              ...
+            +  bnode.c*u(3,idx{:}) + bnode.d*u(4,idx{:}))/dx;
 
 % Compute the constant matrix at the last boundary.
-b(end,idx{:}) = -(bnode.a*u(end,idx{:}) + bnode.b*u(end-1,idx{:}))/dx;
+b(end,idx{:}) = -(bnode.a*u(end,idx{:}) + bnode.b*u(end-1,idx{:})     ...
+              +   bnode.c*u(end-2,idx{:}) + bnode.d*u(end-3,idx{:}))/dx;
 
 % Compute the constant matrix everywhere in between.
 b(2:end-1,idx{:}) = inode.a*(u(3:end,idx{:}) - u(1:end-2,idx{:}))/(2*dx);
 
-% Compute and inverse permute the derivative.
+% Compute the derivative.
 du = A\b;
+clear A b;
+
+% Inverse permute the derivative.
 du = ipermute(du, pm);
 clear drc len nd pm sz szp;
 
@@ -239,6 +255,7 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/02 -- (GDL) Adjusted lower-order boundary schemes.              %
 % 2022/03/02 -- (GDL) Changed function name (it is fourth order).         %
 % 2022/02/28 -- (GDL) Changed input check order.                          %
 % 2022/02/28 -- (GDL) Changed variable name: dir -> drc.                  %
