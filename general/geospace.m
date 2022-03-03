@@ -2,15 +2,15 @@
 %                                                                         %
 %                             GENERAL TOOLBOX                             %
 %                                                                         %
-% mathdim                                                                 %
-% Array Properties                                                        %
-% Determine the mathematical dimension of an array                        %
+% geospace                                                                %
+% Array Generation                                                        %
+% Generate an array with geometric series spacing                         %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% Département de génie mécanique                                          %
-% École de technologie supérieure (ÉTS)                                   %
-% Montréal, Québec                                                        %
+% DÃ©partement de gÃ©nie mÃ©canique                                          %
+% Ã‰cole de technologie supÃ©rieure (Ã‰TS)                                   %
+% MontrÃ©al, QuÃ©bec                                                        %
 % Canada                                                                  %
 %                                                                         %
 % Contributors: Giuseppe Di Labbio                                        %
@@ -36,17 +36,17 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% dim = mathdim(A);                                                       %
-% [dim, dir] = mathdim(A);                                                %
+% y = geospace(x1, x2, n);                                                %
+% y = geospace(x1, x2, n, 'reverse');                                     %
+% y = geospace(___, Name, Value);                                         %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Determine the true mathematical dimension of an array. In other words,  %
-% a scalar will have a dimension of 0, a vector will have a dimension of  %
-% 1 (regardless of which direction its length lies), a matrix will have a %
-% dimension of 2 and so on. For arrays of dimension 2 or greater, the     %
-% mathematical dimension is taken as ndims(squeeze()). The directions     %
-% along which the array size is non-unitary can also be determined.       %
+% Generate an array (column vector) with a spacing defined by a geometric %
+% series between two points. This function complements the linspace and   %
+% logspace functions of MATLAB. By default, the spacing decreases from    %
+% the first to the last point. By specifying the 'reverse' option, the    %
+% spacing will instead increase from the first to the last point.         %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -63,123 +63,142 @@
 % ======================================================================= %
 % Input Arguments (Required):                                             %
 % ----------------------------------------------------------------------- %
-% 'A'            LOGICAL/NUMERIC N-DIMENSIONAL ARRAY                      %
-%              ~ Input array. The mathematical dimension of this array    %
-%                will be determined.                                      %
+% 'x1'           LOGICAL/NUMERIC REAL SCALAR                              %
+%              ~ Input scalar. The first point in the array that will be  %
+%                generated.                                               %
+% ----------------------------------------------------------------------- %
+% 'x2'           LOGICAL/NUMERIC REAL SCALAR                              %
+%              ~ Input scalar. The last point in the array that will be   %
+%                generated. This value must be greater than x1.           %
+% ----------------------------------------------------------------------- %
+% 'n'            POSITIVE INTEGER SCALAR                                  %
+%              ~ Input scalar. The number of points to generate the array %
+%                with.                                                    %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
-% N/A                                                                     %
+% 'reverse'      CASE-INSENSITIVE CHARACTER ARRAY                         %
+%              ~ Specify 'reverse' to have the spacing increase from x1   %
+%                to x2 rather than decrease (default).                    %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
-% N/A                                                                     %
+% 'tol'          NONNEGATIVE REAL SCALAR                                  %
+%                Default: 10^-6                                           %
+%              ~ Tolerance on the common ratio of the geometric series    %
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
-% 'dim'          NONNEGATIVE INTEGER SCALAR                               %
-%              ~ Output scalar. True mathematical dimension of a logical  %
-%                or numeric array, being 0 for a scalar, 1 for a vector,  %
-%                2 for a matrix and so on.                                %
-% ----------------------------------------------------------------------- %
-% 'dir'          NONNEGATIVE INTEGER ARRAY                                %
-%              ~ Output array. The directions along which the array size  %
-%                is non-unitary.                                          %
+% 'y'            NUMERIC REAL ARRAY                                       %
+%              ~ Output array. The generated column vector monotonically  %
+%                increasing from x1 to x2.                                %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Determine the true mathematical dimension of the scalar x = 20.         %
+% Create an array with spacing decreasing as a geometric series from 2 to %
+% 7. Use 51 points.                                                       %
 %                                                                         %
-% >> x   = 20;                                                            %
-% >> dim = mathdim(x);                                                    %
-% >> disp(dim);                                                           %
-%      0                                                                  %
+% >> y = geospace(2, 7, 51);                                              %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 2                                                               %
 %                                                                         %
-% Determine the true mathematical dimension of the array x = [1 2 3].     %
+% Create an array with spacing increasing as a geometric series from 5 to %
+% 32. Use 60 points.                                                      %
 %                                                                         %
-% >> x   = [1 2 3];                                                       %
-% >> dim = mathdim(x);                                                    %
-% >> disp(dim);                                                           %
-%      1                                                                  %
-%                                                                         %
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
-%                                                                         %
-% EXAMPLE 3                                                               %
-%                                                                         %
-% Determine the true mathematical dimension of the three-dimensional      %
-% array x = permute([1 2 3], [3 1 2]).                                    %
-%                                                                         %
-% >> x   = permute([1 2 3], [3 1 2]);                                     %
-% >> dim = mathdim(x);                                                    %
-% >> disp(dim);                                                           %
-%      1                                                                  %
-%                                                                         %
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
-%                                                                         %
-% EXAMPLE 4                                                               %
-%                                                                         %
-% Determine the true mathematical dimension of the four-dimensional array %
-% x = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]) as well as the directions %
-% along which the size is non-unitary.                                    %
-%                                                                         %
-% >> x          = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]);              %
-% >> [dim, dir] = mathdim(x);                                             %
-% >> disp(dim);                                                           %
-%      2                                                                  %
-% >> disp(dir);                                                           %
-%      3                                                                  %
-%      4                                                                  %
+% >> y = geospace(5, 32, 60, 'reverse');                                  %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [dim, varargout] = mathdim(A)
+function [y] = geospace(x1, x2, n, varargin)
 
 
 %% PARSE INPUTS
 
 % Input defaults.
-% N/A
+default.reverse = 0;
+default.tol     = 1e-6;
 
 % Input checks.
-check.A = @(x) validateattributes(x,                                    ...
-               {'logical', 'numeric'},                                  ...
-               {});
+check.x1      = @(x) validateattributes(x,                              ...
+                     {'logical', 'numeric'},                            ...
+                     {'finite', 'real', 'scalar'});
+check.x2      = @(x) validateattributes(x,                              ...
+                     {'logical', 'numeric'},                            ...
+                     {'finite', 'real', 'scalar', '>', x1});
+check.n       = @(x) validateattributes(x,                              ...
+                     {'logical', 'numeric'},                            ...
+                     {'finite', 'integer', 'positive', 'scalar'});
+check.reverse = @(x) any(validatestring(x, {'reverse'}));
+check.tol     = @(x) validateattributes(x,                              ...
+                     {'logical', 'numeric'},                            ...
+                     {'finite', 'positive', 'real', 'scalar'});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'A' , check.A );
-parse(hParser, A);
+addRequired ( hParser, 'x1'      ,                  check.x1      );
+addRequired ( hParser, 'x2'      ,                  check.x2      );
+addRequired ( hParser, 'n'       ,                  check.n       );
+addOptional ( hParser, 'reverse' , default.reverse, check.reverse );
+addParameter( hParser, 'tol'     , default.tol    , check.tol     );
+parse(hParser, x1, x2, n, varargin{:});
 clear check;
 
 % Additional verifications.
-nargoutchk(0,2);
+nargoutchk(0,1);
 
 
-%% DETERMINE MATHEMATICAL DIMENSION
+%% CREATE THE GEOMETRIC SERIES ARRAY
 
-% Determine the mathematical dimension and the non-unitary directions.
-if isscalar(A)
-    dim = 0;
-    dir = 0;
-elseif isvector(squeeze(A))
-    dim     = 1;
-    [~,dir] = max(size(A));
+% Define constants.
+a = 1 + x2 - x1;
+b = x2 - x1;
+
+% Strategy:
+% * We need to solve the equation: r^n - a*r + b = 0
+% * I have thought of two, not necessarily guaranteed, methods. However,
+%   they both seem to work quite well.
+%   1) Use the roots() function of MATLAB and select the real root closest
+%      to the common ratio for the infinite geometric series.
+%      p = [1; zeros(n-2,1); -(1 + x2 - x1); (x2 - x1)];
+%      r = roots(p);
+%      r = min(abs(r(imag(r) == 0) - b/a));
+%    * This method is not suitable for large array lengths due to the need
+%      of finding all roots of a very large polynomial equation when we
+%      really just need one.
+%   2) Iteratively solve the equation by rearranging it as:
+%      r_new = ((r_old)^n + b)/a
+%    * This is the method I ultimately chose. I use the common ratio for
+%      the infinite geometric series as an initial guess.
+
+% Define the common ratio if the geometric series were infinite.
+r0 = b/a;
+
+% Determine the common ratio.
+dr  = hParser.Results.tol + 1;
+while dr > hParser.Results.tol
+    r  = (r0^n + b)/a;
+    dr = abs(r - r0);
+    r0 = r;
+end
+clear a b dr r0;
+
+% Determine the spacings (decreasing from x1 to x2).
+dy = r.^((1:n-1));
+
+% Evaluate the 'reverse' option.
+if hParser.Results.reverse
+    y = [0, cumsum(fliplr(dy))];
 else
-    dim = ndims(squeeze(A));
-    dir = (1:ndims(A)).';
-    dir = dir(size(A) ~= 1);
+    y = [0, cumsum(dy)];
 end
 
-% Output the non-unitary directions.
-if nargout == 2
-    varargout{1} = dir;
-end
+% Create the array and force the last point to be exact.
+y    = y.' + x1;
+y(n) = x2;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -205,19 +224,13 @@ end
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2022/03/03 -- (GDL) Missing space at end of file.                       %
-% 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %
-% 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
-%                     reformatted notes.                                  %
-% 2021/06/04 -- (GDL) Added future updates comments.                      %
-% 2021/06/03 -- (GDL) Added nargoutchk.                                   %
-% 2021/06/03 -- (GDL) Added output of non-unitary directions.             %
-% 2021/05/27 -- (GDL) Beta version of the code finalized.                 %
+% 2022/03/03 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % FUTURE UPDATES                                                          %
 %                                                                         %
-% None foreseen at the moment.                                            %
+% Add a name-value pair to use variable precision arithmetic since the    %
+% spacings could get very small.                                          %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

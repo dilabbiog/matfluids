@@ -1,16 +1,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                         %
-%                             GENERAL TOOLBOX                             %
+%                         DIFFERENTIATION TOOLBOX                         %
 %                                                                         %
-% mathdim                                                                 %
-% Array Properties                                                        %
-% Determine the mathematical dimension of an array                        %
+% ddxO2vFD                                                                %
+% Finite Difference Scheme                                                %
+% First derivative, quasi-second-order error, variable spacing            %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% Département de génie mécanique                                          %
-% École de technologie supérieure (ÉTS)                                   %
-% Montréal, Québec                                                        %
+% DÃ©partement de gÃ©nie mÃ©canique                                          %
+% Ã‰cole de technologie supÃ©rieure (Ã‰TS)                                   %
+% MontrÃ©al, QuÃ©bec                                                        %
 % Canada                                                                  %
 %                                                                         %
 % Contributors: Giuseppe Di Labbio                                        %
@@ -36,23 +36,23 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% dim = mathdim(A);                                                       %
-% [dim, dir] = mathdim(A);                                                %
+% du = ddxO2vFD(u, x);                                                    %
+% du = ddxO2vFD(u, x, drc);                                               %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Determine the true mathematical dimension of an array. In other words,  %
-% a scalar will have a dimension of 0, a vector will have a dimension of  %
-% 1 (regardless of which direction its length lies), a matrix will have a %
-% dimension of 2 and so on. For arrays of dimension 2 or greater, the     %
-% mathematical dimension is taken as ndims(squeeze()). The directions     %
-% along which the array size is non-unitary can also be determined.       %
+% Compute the first derivative of an input array for a variable spacing   %
+% in the specified direction. This function applies a quasi-second-order  %
+% central finite difference scheme. At the boundaries, a quasi-second-    %
+% order forward or backward finite difference scheme is used. The default %
+% derivative direction is 1. When a vector is being differentiated, the   %
+% direction is determined automatically.                                  %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
 %                                                                         %
 % Dependencies:                                                           %
-% N/A                                                                     %
+% mathdim                                                                 %
 %                                                                         %
 % Acknowledgments:                                                        %
 % N/A                                                                     %
@@ -63,13 +63,19 @@
 % ======================================================================= %
 % Input Arguments (Required):                                             %
 % ----------------------------------------------------------------------- %
-% 'A'            LOGICAL/NUMERIC N-DIMENSIONAL ARRAY                      %
-%              ~ Input array. The mathematical dimension of this array    %
-%                will be determined.                                      %
+% 'u'            LOGICAL/NUMERIC N-DIMENSIONAL ARRAY                      %
+%              ~ Input array. Array to be differentiated.                 %
+% ----------------------------------------------------------------------- %
+% 'dx'           NONZERO SCALAR                                           %
+%              ~ Input scalar. Uniform spacing in the direction of the    %
+%                differentiation.                                         %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
-% N/A                                                                     %
+% 'drc'          POSITIVE INTEGER SCALAR                                  %
+%                Default: 1 or vector direction                           %
+%              ~ Input scalar. Direction along which to perform the       %
+%                derivative.                                              %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
@@ -77,109 +83,130 @@
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
-% 'dim'          NONNEGATIVE INTEGER SCALAR                               %
-%              ~ Output scalar. True mathematical dimension of a logical  %
-%                or numeric array, being 0 for a scalar, 1 for a vector,  %
-%                2 for a matrix and so on.                                %
-% ----------------------------------------------------------------------- %
-% 'dir'          NONNEGATIVE INTEGER ARRAY                                %
-%              ~ Output array. The directions along which the array size  %
-%                is non-unitary.                                          %
+% 'du'           NUMERIC N-DIMENSIONAL ARRAY                              %
+%              ~ Output array. Derivative of the input array in the       %
+%                specified direction.                                     %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Determine the true mathematical dimension of the scalar x = 20.         %
+% Compute the derivative of the function u = sin(x) on the interval [0,   %
+% pi] using a quasi-second-order, central finite difference scheme with a %
+% grid spacing of 51 points in the form of a geometric series.            %
 %                                                                         %
-% >> x   = 20;                                                            %
-% >> dim = mathdim(x);                                                    %
-% >> disp(dim);                                                           %
-%      0                                                                  %
+% >> x       = geospace(0, pi, 51);                                       %
+% >> u       = sin(x).';                                                  %
+% >> ux_O2   = ddxO2vFD(u, x);                                            %
+% >> ux_TRUE = cos(x).';                                                  %
+% >> E2      = abs(ux_O2 - ux_TRUE);                                      %
+% >> disp(max(E2(:)));                                                    %
+%     0.1416                                                              %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 2                                                               %
 %                                                                         %
-% Determine the true mathematical dimension of the array x = [1 2 3].     %
+% Compute the derivative of the function u = y^2*sin(x) with respect to y %
+% on the interval (x,y) = ([0,pi],[0,1]) using the quasi-second-order,    %
+% central finite difference scheme with a grid spacing of dx = pi/50 and  %
+% a geometric series of 51 points in the y direction.                     %
 %                                                                         %
-% >> x   = [1 2 3];                                                       %
-% >> dim = mathdim(x);                                                    %
-% >> disp(dim);                                                           %
-%      1                                                                  %
-%                                                                         %
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
-%                                                                         %
-% EXAMPLE 3                                                               %
-%                                                                         %
-% Determine the true mathematical dimension of the three-dimensional      %
-% array x = permute([1 2 3], [3 1 2]).                                    %
-%                                                                         %
-% >> x   = permute([1 2 3], [3 1 2]);                                     %
-% >> dim = mathdim(x);                                                    %
-% >> disp(dim);                                                           %
-%      1                                                                  %
-%                                                                         %
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
-%                                                                         %
-% EXAMPLE 4                                                               %
-%                                                                         %
-% Determine the true mathematical dimension of the four-dimensional array %
-% x = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]) as well as the directions %
-% along which the size is non-unitary.                                    %
-%                                                                         %
-% >> x          = permute([1 2 3; 4 5 6; 7 8 9], [4 3 1 2]);              %
-% >> [dim, dir] = mathdim(x);                                             %
-% >> disp(dim);                                                           %
-%      2                                                                  %
-% >> disp(dir);                                                           %
-%      3                                                                  %
-%      4                                                                  %
+% >> dx      = pi/50;                                                     %
+% >> x       = (0:dx:pi).';                                               %
+% >> y       = geospace(0, 1, 51);                                        %
+% >> [X,Y]   = ndgrid(x,y);                                               %
+% >> u       = (Y.^2).*sin(X);                                            %
+% >> uy_O2   = ddxO2vFD(u, y, 2);                                         %
+% >> uy_TRUE = 2*Y.*sin(X);                                               %
+% >> E2      = abs(uy_O2 - uy_TRUE);                                      %
+% >> disp(max(E2(:)));                                                    %
+%     0.2705                                                              %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [dim, varargout] = mathdim(A)
+function [du] = ddxO2vFD(u, x, varargin)
 
 
 %% PARSE INPUTS
 
 % Input defaults.
-% N/A
+default.drc = 1;
 
 % Input checks.
-check.A = @(x) validateattributes(x,                                    ...
-               {'logical', 'numeric'},                                  ...
-               {});
+check.u   = @(x) validateattributes(x,                                  ...
+                 {'logical', 'numeric'},                                ...
+                 {'nonempty'});
+check.x   = @(x) validateattributes(x,                                  ...
+                 {'logical', 'numeric'},                                ...
+                 {'finite', 'increasing', 'vector'});
+check.drc = @(x) validateattributes(x,                                  ...
+                 {'logical', 'numeric'},                                ...
+                 {'finite', 'positive', 'scalar'});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'A' , check.A );
-parse(hParser, A);
-clear check;
+addRequired ( hParser, 'u'   , check.u                 );
+addRequired ( hParser, 'x'   , check.x                 );
+addOptional ( hParser, 'drc' , default.drc , check.drc );
+parse(hParser, u, x, varargin{:});
+clear check default;
 
 % Additional verifications.
-nargoutchk(0,2);
+nargoutchk(0,1);
 
 
-%% DETERMINE MATHEMATICAL DIMENSION
+%% DIFFERENTIATION
 
-% Determine the mathematical dimension and the non-unitary directions.
-if isscalar(A)
-    dim = 0;
-    dir = 0;
-elseif isvector(squeeze(A))
-    dim     = 1;
-    [~,dir] = max(size(A));
-else
-    dim = ndims(squeeze(A));
-    dir = (1:ndims(A)).';
-    dir = dir(size(A) ~= 1);
+% Determine the size and number of dimensions of the input array.
+sz = size(u);
+nd = ndims(u);
+
+% Set the derivative direction.
+[dim, drc] = mathdim(u);
+if dim > 1, drc = hParser.Results.drc; end
+clear dim;
+
+% Permute the input array.
+pm = 1:nd;
+if drc > 1
+    pm(drc) = [];
+    pm      = [drc pm];
+    u       = permute(u, pm);
 end
+szp = sz(pm);
 
-% Output the non-unitary directions.
-if nargout == 2
-    varargout{1} = dir;
-end
+% Initialize the spacing array.
+dx = diff(x);
+
+% Initialize the derivative array.
+du = zeros(szp);
+
+% Generate colon index assignments.
+idx = repmat({':'}, 1, nd-1);
+
+% Apply quasi-2nd order forward difference at the first boundary.
+du(1,idx{:}) = (-dx(1)^2*u(3,idx{:})                                    ...
+             +  (dx(1) + dx(2))^2*u(2,idx{:})                           ...
+             -   dx(2)*(2*dx(1) + dx(2))*u(1,idx{:}))                   ...
+             /  (dx(1)*dx(2)*(dx(1) + dx(2)));
+
+% Apply quasi-2nd order backward difference at the last boundary.
+du(end,idx{:}) = (dx(end)^2*u(end-2,idx{:})                             ...
+               - (dx(end) + dx(end-1))^2*u(end-1,idx{:})                ...
+               +  dx(end-1)*(2*dx(end) + dx(end-1))*u(end,idx{:}))      ...
+               / (dx(end)*dx(end-1)*(dx(end) + dx(end-1)));
+
+% Apply quasi-2nd order central difference everywhere in between.
+du(2:end-1,idx{:}) = (dx(1:end-1).^2.*u(3:end,idx{:})                   ...
+                   -  dx(2:end).^2.*u(1:end-2,idx{:})                   ...
+                   - (dx(1:end-1).^2 - dx(2:end).^2)                    ...
+                  .* u(2:end-1,idx{:}))                                 ...
+                  ./ (dx(1:end-1).*dx(2:end).*(dx(1:end-1) + dx(2:end)));
+
+% Inverse permute the derivative.
+du = ipermute(du, pm);
+clear drc nd pm sz szp;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -205,14 +232,7 @@ end
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2022/03/03 -- (GDL) Missing space at end of file.                       %
-% 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %
-% 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
-%                     reformatted notes.                                  %
-% 2021/06/04 -- (GDL) Added future updates comments.                      %
-% 2021/06/03 -- (GDL) Added nargoutchk.                                   %
-% 2021/06/03 -- (GDL) Added output of non-unitary directions.             %
-% 2021/05/27 -- (GDL) Beta version of the code finalized.                 %
+% 2022/03/03 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
