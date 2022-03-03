@@ -2,8 +2,8 @@
 %                                                                         %
 %                         DIFFERENTIATION TOOLBOX                         %
 %                                                                         %
-% ddxCO4u                                                                 %
-% Compact Difference Derivative                                           %
+% ddxO4uCD                                                                %
+% Compact Difference Scheme                                               %
 % First derivative, fourth-order error, uniform spacing                   %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
@@ -36,8 +36,8 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% du = ddxCO4u(u, dx);                                                    %
-% du = ddxCO4u(u, dx, drc);                                               %
+% du = ddxO4uCD(u, dx);                                                   %
+% du = ddxO4uCD(u, dx, drc);                                              %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -98,7 +98,7 @@
 %                                                                         %
 % >> dx      = pi/50;                                                     %
 % >> u       = sin(0:dx:pi).';                                            %
-% >> ux_O4   = ddxCO4u(u, dx);                                            %
+% >> ux_O4   = ddxO4uCD(u, dx);                                           %
 % >> ux_TRUE = cos(0:dx:pi).';                                            %
 % >> E4      = abs(ux_O4 - ux_TRUE);                                      %
 % >> disp(max(E4(:)));                                                    %
@@ -118,7 +118,7 @@
 % >> y       = (0:dy:1).';                                                %
 % >> [X,Y]   = ndgrid(x,y);                                               %
 % >> u       = (Y.^2).*sin(X);                                            %
-% >> uy_O4   = ddxCO4u(u, dy, 2);                                         %
+% >> uy_O4   = ddxO4uCD(u, dy, 2);                                        %
 % >> uy_TRUE = 2*Y.*sin(X);                                               %
 % >> E4      = abs(uy_O4 - uy_TRUE);                                      %
 % >> disp(max(E4(:)));                                                    %
@@ -127,7 +127,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [du] = ddxCO4u(u, dx, varargin)
+function [du] = ddxO4uCD(u, dx, varargin)
 
 
 %% PARSE INPUTS
@@ -255,6 +255,7 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/03 -- (GDL) Changed derivative function naming convention.      %
 % 2022/03/02 -- (GDL) Adjusted lower-order boundary schemes.              %
 % 2022/03/02 -- (GDL) Changed function name (it is fourth order).         %
 % 2022/02/28 -- (GDL) Changed input check order.                          %
