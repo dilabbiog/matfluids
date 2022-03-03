@@ -2,15 +2,15 @@
 %                                                                         %
 %                         DIFFERENTIATION TOOLBOX                         %
 %                                                                         %
-% ddxO2Gu                                                                 %
-% Finite Difference Derivative                                            %
+% ddxO2uFDg                                                               %
+% Finite Difference Scheme                                                %
 % First derivative, second-order error, geometry, uniform spacing         %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% Département de génie mécanique                                          %
-% École de technologie supérieure (ÉTS)                                   %
-% Montréal, Québec                                                        %
+% DÃ©partement de gÃ©nie mÃ©canique                                          %
+% Ã‰cole de technologie supÃ©rieure (Ã‰TS)                                   %
+% MontrÃ©al, QuÃ©bec                                                        %
 % Canada                                                                  %
 %                                                                         %
 % Contributors: Giuseppe Di Labbio                                        %
@@ -36,8 +36,8 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% du = ddxO2Gu(u, dx, geom);                                              %
-% du = ddxO2Gu(u, dx, geom, drc);                                         %
+% du = ddxO2uFDg(u, dx, geom);                                            %
+% du = ddxO2uFDg(u, dx, geom, drc);                                       %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -106,7 +106,7 @@
 % >> dx      = pi/50;                                                     %
 % >> geom    = [ones(20,1); zeros(10,1); ones(6,1); zeros(15,1)];         %
 % >> u       = geom.*(sin(0:dx:pi).');                                    %
-% >> ux_O2   = ddxO2Gu(u, dx, geom);                                      %
+% >> ux_O2   = ddxO2uFDg(u, dx, geom);                                    %
 % >> ux_TRUE = geom.*(cos(0:dx:pi).');                                    %
 % >> E2      = abs(ux_O2 - ux_TRUE);                                      %
 % >> disp(max(E2(:)));                                                    %
@@ -130,7 +130,7 @@
 % >> geom(5:20,5:20)   = 1;                                               %
 % >> geom(40:45,55:80) = 1;                                               %
 % >> u                 = geom.*(Y.^2).*sin(X);                            %
-% >> uy_O2             = ddxO2Gu(u, dy, geom, 2);                         %
+% >> uy_O2             = ddxO2uFDg(u, dy, geom, 2);                       %
 % >> uy_TRUE           = 2*geom.*Y.*sin(X);                               %
 % >> E2                = abs(uy_O2 - uy_TRUE);                            %
 % >> disp(max(E2(:)));                                                    %
@@ -139,7 +139,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [du] = ddxO2Gu(u, dx, geom, varargin)
+function [du] = ddxO2uFDg(u, dx, geom, varargin)
 
 
 %% PARSE INPUTS
@@ -257,6 +257,7 @@ clear drc nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/03 -- (GDL) Changed derivative function naming convention.      %
 % 2022/03/02 -- (GDL) Added missing support for singular nodes.           %
 % 2022/02/28 -- (GDL) Changed input check order.                          %
 % 2022/02/28 -- (GDL) Changed variable name: dir -> drc.                  %
