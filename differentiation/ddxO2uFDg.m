@@ -4,7 +4,7 @@
 %                                                                         %
 % ddxO2uFDg                                                               %
 % Finite Difference Scheme                                                %
-% First derivative, second-order error, geometry, uniform spacing         %
+% First derivative, second-order error, uniform spacing, geometry         %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -257,6 +257,7 @@ clear drc nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/03 -- (GDL) Edited function preamble.                           %
 % 2022/03/03 -- (GDL) Changed derivative function naming convention.      %
 % 2022/03/02 -- (GDL) Added missing support for singular nodes.           %
 % 2022/02/28 -- (GDL) Changed input check order.                          %
