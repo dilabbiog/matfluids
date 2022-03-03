@@ -2,8 +2,8 @@
 %                                                                         %
 %                         DIFFERENTIATION TOOLBOX                         %
 %                                                                         %
-% ddxCRO4u                                                                %
-% Hybrid Compact-Richardson Derivative                                    %
+% ddxO4uCR                                                                %
+% Hybrid Compact-Richardson Scheme                                        %
 % First derivative, fourth-order error, uniform spacing                   %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
@@ -36,8 +36,8 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% du = ddxCRO4u(u, dx);                                                   %
-% du = ddxCRO4u(u, dx, drc);                                              %
+% du = ddxO4uCR(u, dx);                                                   %
+% du = ddxO4uCR(u, dx, drc);                                              %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -54,7 +54,7 @@
 % MATLAB R2019b or later.                                                 %
 %                                                                         %
 % Dependencies:                                                           %
-% ddxCO4u                                                                 %
+% ddxO4uCD                                                                %
 % mathdim                                                                 %
 %                                                                         %
 % Acknowledgments:                                                        %
@@ -108,7 +108,7 @@
 %                                                                         %
 % >> dx      = pi/50;                                                     %
 % >> u       = sin(0:dx:pi).';                                            %
-% >> ux_O4   = ddxCRO4u(u, dx);                                           %
+% >> ux_O4   = ddxO4uCR(u, dx);                                           %
 % >> ux_TRUE = cos(0:dx:pi).';                                            %
 % >> E4      = abs(ux_O4 - ux_TRUE);                                      %
 % >> disp(max(E4(:)));                                                    %
@@ -129,7 +129,7 @@
 % >> y       = (0:dy:1).';                                                %
 % >> [X,Y]   = ndgrid(x,y);                                               %
 % >> u       = (Y.^2).*sin(X);                                            %
-% >> uy_O4   = ddxCRO4u(u, dy, 2);                                        %
+% >> uy_O4   = ddxO4uCR(u, dy, 2);                                        %
 % >> uy_TRUE = 2*Y.*sin(X);                                               %
 % >> E4      = abs(uy_O4 - uy_TRUE);                                      %
 % >> disp(max(E4(:)));                                                    %
@@ -138,7 +138,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [du] = ddxCRO4u(u, dx, varargin)
+function [du] = ddxO4uCR(u, dx, varargin)
 
 
 %% PARSE INPUTS
@@ -202,19 +202,19 @@ A2 = 1036;
 A4 = -69;
 
 % Compute the derivative.
-du                  = A1*ddxCO4u(u, dx);
+du                  = A1*ddxO4uCD(u, dx);
 du(1:2:end, idx{:}) = du(1:2:end, idx{:})                               ...
-                    + A2*ddxCO4u(u(1:2:end, idx{:}), 2*dx);
+                    + A2*ddxO4uCD(u(1:2:end, idx{:}), 2*dx);
 du(2:2:end, idx{:}) = du(2:2:end, idx{:})                               ...
-                    + A2*ddxCO4u(u(2:2:end, idx{:}), 2*dx);
+                    + A2*ddxO4uCD(u(2:2:end, idx{:}), 2*dx);
 du(1:4:end, idx{:}) = du(1:4:end, idx{:})                               ...
-                    + A4*ddxCO4u(u(1:4:end, idx{:}), 4*dx);
+                    + A4*ddxO4uCD(u(1:4:end, idx{:}), 4*dx);
 du(2:4:end, idx{:}) = du(2:4:end, idx{:})                               ...
-                    + A4*ddxCO4u(u(2:4:end, idx{:}), 4*dx);
+                    + A4*ddxO4uCD(u(2:4:end, idx{:}), 4*dx);
 du(3:4:end, idx{:}) = du(3:4:end, idx{:})                               ...
-                    + A4*ddxCO4u(u(3:4:end, idx{:}), 4*dx);
+                    + A4*ddxO4uCD(u(3:4:end, idx{:}), 4*dx);
 du(4:4:end, idx{:}) = du(4:4:end, idx{:})                               ...
-                    + A4*ddxCO4u(u(4:4:end, idx{:}), 4*dx);
+                    + A4*ddxO4uCD(u(4:4:end, idx{:}), 4*dx);
 du                  = (1/A)*du;
 clear idx A A1 A2 A4;
 
@@ -248,6 +248,7 @@ clear drc nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/03 -- (GDL) Changed derivative function naming convention.      %
 % 2022/03/03 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
