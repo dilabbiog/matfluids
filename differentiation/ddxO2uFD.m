@@ -2,8 +2,8 @@
 %                                                                         %
 %                         DIFFERENTIATION TOOLBOX                         %
 %                                                                         %
-% ddxO2u                                                                  %
-% Finite Difference Derivative                                            %
+% ddxO2uFD                                                                %
+% Finite Difference Scheme                                                %
 % First derivative, second-order error, uniform spacing                   %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
@@ -36,8 +36,8 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% du = ddxO2u(u, dx);                                                     %
-% du = ddxO2u(u, dx, drc);                                                %
+% du = ddxO2uFD(u, dx);                                                   %
+% du = ddxO2uFD(u, dx, drc);                                              %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -96,7 +96,7 @@
 %                                                                         %
 % >> dx      = pi/50;                                                     %
 % >> u       = sin(0:dx:pi).';                                            %
-% >> ux_O2   = ddxO2u(u, dx);                                             %
+% >> ux_O2   = ddxO2uFD(u, dx);                                           %
 % >> ux_TRUE = cos(0:dx:pi).';                                            %
 % >> E2      = abs(ux_O2 - ux_TRUE);                                      %
 % >> disp(max(E2(:)));                                                    %
@@ -116,7 +116,7 @@
 % >> y       = (0:dy:1).';                                                %
 % >> [X,Y]   = ndgrid(x,y);                                               %
 % >> u       = (Y.^2).*sin(X);                                            %
-% >> uy_O2   = ddxO2u(u, dy, 2);                                          %
+% >> uy_O2   = ddxO2uFD(u, dy, 2);                                        %
 % >> uy_TRUE = 2*Y.*sin(X);                                               %
 % >> E2      = abs(uy_O2 - uy_TRUE);                                      %
 % >> disp(max(E2(:)));                                                    %
@@ -125,7 +125,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [du] = ddxO2u(u, dx, varargin)
+function [du] = ddxO2uFD(u, dx, varargin)
 
 
 %% PARSE INPUTS
@@ -220,6 +220,7 @@ clear drc nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/03 -- (GDL) Changed derivative function naming convention.      %
 % 2022/03/03 -- (GDL) Changed function name (removed 'S' identifier).     %
 % 2022/02/28 -- (GDL) Changed input check order.                          %
 % 2022/02/28 -- (GDL) Changed variable name: dir -> drc.                  %
