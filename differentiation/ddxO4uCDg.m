@@ -2,9 +2,9 @@
 %                                                                         %
 %                         DIFFERENTIATION TOOLBOX                         %
 %                                                                         %
-% ddxCO4Gu                                                                %
-% Compact Difference Derivative                                           %
-% First derivative, fourth-order error, geometry, uniform spacing         %
+% ddxO4uCDg                                                               %
+% Compact Difference Scheme                                               %
+% First derivative, fourth-order error, uniform spacing, geometry         %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -36,8 +36,8 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% du = ddxCO4Gu(u, dx, geom);                                             %
-% du = ddxCO4Gu(u, dx, geom, drc);                                        %
+% du = ddxO4uCDg(u, dx, geom);                                            %
+% du = ddxO4uCDg(u, dx, geom, drc);                                       %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -109,7 +109,7 @@
 % >> dx      = pi/50;                                                     %
 % >> geom    = [ones(20,1); zeros(10,1); ones(6,1); zeros(15,1)];         %
 % >> u       = geom.*(sin(0:dx:pi).');                                    %
-% >> ux_O4   = ddxCO4Gu(u, dx, geom);                                     %
+% >> ux_O4   = ddxO4uCDg(u, dx, geom);                                    %
 % >> ux_TRUE = geom.*(cos(0:dx:pi).');                                    %
 % >> E4      = abs(ux_O4 - ux_TRUE);                                      %
 % >> disp(max(E4(:)));                                                    %
@@ -133,7 +133,7 @@
 % >> geom(5:20,5:20)   = 1;                                               %
 % >> geom(40:45,55:80) = 1;                                               %
 % >> u                 = geom.*(Y.^2).*sin(X);                            %
-% >> uy_O4             = ddxCO4Gu(u, dy, geom, 2);                        %
+% >> uy_O4             = ddxO4uCDg(u, dy, geom, 2);                       %
 % >> uy_TRUE           = 2*geom.*Y.*sin(X);                               %
 % >> E4                = abs(uy_O4 - uy_TRUE);                            %
 % >> disp(max(E4(:)));                                                    %
@@ -142,7 +142,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [du] = ddxCO4Gu(u, dx, geom, varargin)
+function [du] = ddxO4uCDg(u, dx, geom, varargin)
 
 
 %% PARSE INPUTS
@@ -329,6 +329,7 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/03 -- (GDL) Changed derivative function naming convention.      %
 % 2022/03/02 -- (GDL) Adjusted lower-order boundary schemes.              %
 % 2022/03/02 -- (GDL) Changed function name (it is fourth order).         %
 % 2022/03/02 -- (GDL) Added missing support for singular nodes.           %
