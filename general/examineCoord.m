@@ -39,6 +39,7 @@
 % val = examineCoord(coord);                                              %
 % [val, msg] = examineCoord(coord);                                       %
 % [___] = examineCoord(coord, fields);                                    %
+% [___] = examineCoord(coord, fields, 'all');                             %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
@@ -93,6 +94,10 @@
 %                "y" "z" "t"]. Field names cannot be repeated. The        %
 %                ordering of the listed fields is corrected for by the    %
 %                function.                                                %
+% ----------------------------------------------------------------------- %
+% 'all'          CASE-INSENSITIVE CHARACTER ARRAY                         %
+%              ~ Specify 'all' to determine whether all the specified     %
+%                field names are present in the coordinate structure.     %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
@@ -186,6 +191,7 @@ function [val, varargout] = examineCoord(coord, varargin)
 
 % Input defaults.
 default.fields = ["x" "y" "z" "t"];
+default.all    = 0;
 
 % Input checks.
 check.coord  = @(x) validateattributes(x,                               ...
@@ -194,11 +200,13 @@ check.coord  = @(x) validateattributes(x,                               ...
 check.fields = @(x) validateattributes(x,                               ...
                     {'string'},                                         ...
                     {'nonempty', 'row'});
+check.all    = @(x) any(validatestring(x, {'all'}));
 
 % Parse the inputs.
 hParser = inputParser;
 addRequired ( hParser , 'coord'  ,                  check.coord  );
 addOptional ( hParser , 'fields' , default.fields , check.fields );
+addOptional ( hParser , 'all'    , default.all    , check.all    );
 parse(hParser, coord, varargin{:});
 clear check;
 
@@ -221,7 +229,7 @@ end
 
 % Verify, or ensure, that the search fields appear in the proper order.
 validFields = default.fields(sort(Locb));
-clear default Lia Locb;
+clear default;
 
 
 %% EXAMINE COORDINATE STRUCTURE
@@ -232,7 +240,6 @@ numFields   = length(coordFields);
 
 % Examine the validity of the fields in the coordinate structure.
 [Lia, Locb] = ismember(coordFields, validFields);
-clear validFields;
 
 % Return false if one of the fields is invalid.
 if ~min(Lia)
@@ -245,7 +252,8 @@ if ~min(Lia)
 end
 clear Lia;
 
-% Return false if one of the fields is not in the proper order.
+% Return false if one of the fields is not in the proper order or of one of
+% the fields is repeated.
 if min(diff(Locb)) <= 0
     val = false;
     msg = ['At least one field in the coordinate structure is not in t' ...
@@ -255,6 +263,20 @@ if min(diff(Locb)) <= 0
     return;
 end
 clear Locb;
+
+% When the 'all' option is checked, return false if all the fields are not
+% present in the coordinate structure.
+if hParser.Results.all
+    if length(coordFields) ~= length(validFields)
+        val = false;
+        msg = ['At least one field is missing from the coordinate stru' ...
+               'cture.'];
+        varargout{1} = sprintf('%s', msg);
+        clear msg;
+        return;
+    end
+end
+clear validFields;
 
 % Return false if one of the coordinate fields is not a column vector.
 C = zeros(3,numFields);
@@ -319,6 +341,7 @@ varargout{1} = "valid";
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/04 -- (GDL) Added 'all' option.                                 %
 % 2022/03/04 -- (GDL) Changed function behaviour.                         %
 % 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %
 % 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
