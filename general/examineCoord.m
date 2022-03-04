@@ -36,13 +36,20 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% examineCoord(coord);                                                    %
+% val = examineCoord(coord);                                              %
+% [val, msg] = examineCoord(coord);                                       %
+% [___] = examineCoord(coord, fields);                                    %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
 % Examine whether a coordinate structure is properly formatted for        %
-% MATfluids. The function has no specific output, it will simply throw an %
-% error if the coordinate structure is not correctly formatted.           %
+% MATfluids. The function will output true if the coordinate structure is %
+% properly formatted or false otherwise. By default, the permitted fields %
+% in the coordinate structure can be any subset of ["x" "y" "z" "t"] as   %
+% long as the order is respected. The user can instead choose to restrict %
+% the permitted field names to a smaller subset (ex., only ["x" "t"]). An %
+% optional output message can be used to describe what is wrong with the  %
+% coordinate structure.                                                   %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -78,7 +85,14 @@
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
-% N/A                                                                     %
+% 'fields'       STRING ARRAY (1 X N)                                     %
+%                Default: ["x" "y" "z" "t"]                               %
+%              ~ Permitted field names. The fields in the coordinate      %
+%                structure are compared against the permitted fields. The %
+%                string array may contain any subset of the fields ["x"   %
+%                "y" "z" "t"]. Field names cannot be repeated. The        %
+%                ordering of the listed fields is corrected for by the    %
+%                function.                                                %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
@@ -86,7 +100,16 @@
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
-% N/A                                                                     %
+% 'val'          LOGICAL SCALAR                                           %
+%              ~ Truth value. The value will return true (1) if the       %
+%                coordinate structure is identified as valid and false    %
+%                (0) otherwise.                                           %
+% ----------------------------------------------------------------------- %
+% 'msg'          STRING SCALAR                                            %
+%              ~ Coordinate structure message. The string will return     %
+%                "valid" if the coordinate structure is identified as     %
+%                valid. Otherwise, the string will display a message      %
+%                describing an error of the coordinate structure.         %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
@@ -94,11 +117,12 @@
 % Determine whether the elements of the following coordinate structure is %
 % correct for MATfluids.                                                  %
 %                                                                         %
-% >> clear coord;                                                         %
 % >> coord.x = (-10:0.1:10).';                                            %
 % >> coord.y = (0:0.1:5).';                                               %
 % >> coord.t = (0:0.1:2).';                                               %
-% >> examineCoord(coord);                                                 %
+% >> val     = examineCoord(coord);                                       %
+% >> disp(val);                                                           %
+%    1                                                                    %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
@@ -107,12 +131,13 @@
 % Determine whether the elements of the following coordinate structure is %
 % correct for MATfluids.                                                  %
 %                                                                         %
-% >> clear coord;                                                         %
-% >> coord.t = (0:0.1:2).';                                               %
-% >> coord.y = (0:0.1:5).';                                               %
-% >> coord.x = (-10:0.1:10).';                                            %
-% >> examineCoord(coord);                                                 %
-% Error using examineCoord (line 193)                                     %
+% >> coord.t    = (0:0.1:2).';                                            %
+% >> coord.y    = (0:0.1:5).';                                            %
+% >> coord.x    = (-10:0.1:10).';                                         %
+% >> [val, msg] = examineCoord(coord);                                    %
+% >> disp(val);                                                           %
+%    0                                                                    %
+% >> disp(msg);                                                           %
 % At least one field in the coordinate structure is not in the proper     %
 % order.                                                                  %
 %                                                                         %
@@ -123,108 +148,152 @@
 % Determine whether the elements of the following coordinate structure is %
 % correct for MATfluids.                                                  %
 %                                                                         %
-% >> clear coord;                                                         %
-% >> coord.x = [1 2 4 6 5].';                                             %
-% >> coord.y = (0:0.1:5).';                                               %
-% >> coord.t = (0:0.1:2).';                                               %
-% >> examineCoord(coord);                                                 %
-% Error using examineCoord (line 222)                                     %
+% >> coord.x    = [1 2 4 6 5].';                                          %
+% >> coord.y    = (0:0.1:5).';                                            %
+% >> coord.t    = (0:0.1:2).';                                            %
+% >> [val, msg] = examineCoord(coord);                                    %
+% >> disp(val);                                                           %
+%    0                                                                    %
+% >> disp(msg);                                                           %
 % At least one field in the coordinate structure does not contain a       %
 % strictly monotonically increasing/decreasing real-valued column vector. %
+%                                                                         %
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
+%                                                                         %
+% EXAMPLE 4                                                               %
+%                                                                         %
+% Determine whether the elements of the following coordinate structure is %
+% correct for MATfluids. Restrict the permitted field names to ["x" "y"   %
+% "t"].                                                                   %
+%                                                                         %
+% >> coord.x    = (-10:0.1:10).';                                         %
+% >> coord.y    = (0:0.1:5).';                                            %
+% >> coord.z    = (0:0.1:20).';                                           %
+% >> coord.t    = (0:0.1:2).';                                            %
+% >> [val, msg] = examineCoord(coord, ["x" "y" "t"]);                     %
+% >> disp(val);                                                           %
+%    0                                                                    %
+% >> disp(msg);                                                           %
+% At least one field name is not valid in the coordinate structure.       %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function examineCoord(coord)
+function [val, varargout] = examineCoord(coord, varargin)
 
 
 %% PARSE INPUTS
 
 % Input defaults.
-% N/A
+default.fields = ["x" "y" "z" "t"];
 
 % Input checks.
-check.coord = @(x) validateattributes(x,                                ...
-                   {'struct'},                                          ...
-                   {'size', [1 1]});
+check.coord  = @(x) validateattributes(x,                               ...
+                    {'struct'},                                         ...
+                    {'size', [1 1]});
+check.fields = @(x) validateattributes(x,                               ...
+                    {'string'},                                         ...
+                    {'nonempty', 'row'});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'coord' , check.coord );
-parse(hParser, coord);
+addRequired ( hParser , 'coord'  ,                  check.coord  );
+addOptional ( hParser , 'fields' , default.fields , check.fields );
+parse(hParser, coord, varargin{:});
 clear check;
 
 % Additional verifications.
-nargoutchk(0,0);
+nargoutchk(0,2);
+
+% Verify whether the search fields are valid.
+validFields = hParser.Results.fields;
+[Lia, Locb] = ismember(validFields, default.fields);
+if ~min(Lia)
+    error('fields:invalidFields',                                       ...
+         ['At least one of the specified search fields is invalid. Onl' ...
+          'y a subset of (x,y,z,t) may be used.']);
+end
+if length(Locb) ~= length(unique(Locb))
+    error('fields:repeatedFields',                                      ...
+         ['At least one of the specified search fields appears more th' ...
+          'an once.']);
+end
+
+% Verify, or ensure, that the search fields appear in the proper order.
+validFields = default.fields(sort(Locb));
+clear default Lia Locb;
 
 
 %% EXAMINE COORDINATE STRUCTURE
 
-% List of valid fields.
-validFields = ["x"; "y"; "z"; "t"];
-
 % Get the fields in the coordinate structure.
-fields    = fieldnames(coord);
-numFields = length(fields);
+coordFields = fieldnames(coord);
+numFields   = length(coordFields);
 
 % Examine the validity of the fields in the coordinate structure.
-idx = zeros(size(fields));
-val = zeros(size(fields));
-for k = 1:numFields
-    % Determine whether the field is valid and its index in validFields.
-    [val(k), idx(k)] = max(strcmpi(fields{k}, validFields));
-    
-    % If there is no match, ensure the index is set to zero.
-    idx(k) = val(k)*idx(k);
-end
-val = min(val);
+[Lia, Locb] = ismember(coordFields, validFields);
 clear validFields;
 
-% Return an error if one of the fields is invalid.
-if ~val
-   error('coord:invalidFields',                                         ...
-        ['At least one field name is not valid in the coordinate struc' ...
-         'ture.']);
+% Return false if one of the fields is invalid.
+if ~min(Lia)
+    val = false;
+    msg = ['At least one field name is not valid in the coordinate str' ...
+           'ucture.'];
+    varargout{1} = sprintf('%s', msg);
+    clear msg;
+    return;
 end
-clear val;
+clear Lia;
 
-% Return an error if one of the fields is not in the proper order.
-if min(diff(idx)) <= 0
-   error('coord:unorderedFields',                                       ...
-        ['At least one field in the coordinate structure is not in the' ...
-         ' proper order.']);
+% Return false if one of the fields is not in the proper order.
+if min(diff(Locb)) <= 0
+    val = false;
+    msg = ['At least one field in the coordinate structure is not in t' ...
+           'he proper order.'];
+    varargout{1} = sprintf('%s', msg);
+    clear msg;
+    return;
 end
-clear idx;
+clear Locb;
 
-% Return an error if one of the coordinate fields is not a column vector.
+% Return false if one of the coordinate fields is not a column vector.
 C = zeros(3,numFields);
 for k = 1:numFields
-    C(1,k) = isrealnum(coord.(fields{k}), 'all');
-    C(2,k) = iscolumn(coord.(fields{k}));
-    C(3,k) = isempty(coord.(fields{k}))                                 ...
-          || isscalar(coord.(fields{k}));
+    C(1,k) = isrealnum(coord.(coordFields{k}), 'all');
+    C(2,k) = iscolumn(coord.(coordFields{k}));
+    C(3,k) = isempty(coord.(coordFields{k}))                            ...
+          || isscalar(coord.(coordFields{k}));
 end
 if ~min((C(1,:) & C(2,:)) | C(3,:))
-    error('coord:invalidCoordinates',                                   ...
-         ['At least one field in the coordinate structure does not con' ...
-          'tain a strictly monotonically increasing/decreasing real-va' ...
-          'lued column vector.']);
+    val = false;
+    msg = ['At least one field in the coordinate structure does not co' ...
+           'ntain a strictly monotonically increasing/decreasing real-' ...
+           'valued column vector.'];
+    varargout{1} = sprintf('%s', msg);
+    clear msg;
+    return;
 end
 
-% Return an error if one of the coordinate fields is not strictly
+% Return false if one of the coordinate fields is not strictly
 % monotonically increasing/decreasing.
 for k = 1:numFields
-    tmp  = diff(coord.(fields{k}));
+    tmp  = diff(coord.(coordFields{k}));
     C(1,k) = isposreal(tmp, 'all');
     C(2,k) = isnegreal(tmp, 'all');
 end
 if ~min(C(1,:) | C(2,:) | C(3,:))
-    error('coord:invalidCoordinates',                                   ...
-         ['At least one field in the coordinate structure does not con' ...
-          'tain a strictly monotonically increasing/decreasing real-va' ...
-          'lued column vector.']);
+    val = false;
+    msg = ['At least one field in the coordinate structure does not co' ...
+           'ntain a strictly monotonically increasing/decreasing real-' ...
+           'valued column vector.'];
+    varargout{1} = sprintf('%s', msg);
+    return;
 end
-clear C fields k numFields tmp;
+clear C coordFields k numFields tmp;
+
+% If the code reached this point, all tests have passed.
+val          = true;
+varargout{1} = "valid";
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -250,6 +319,7 @@ clear C fields k numFields tmp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/04 -- (GDL) Changed function behaviour.                         %
 % 2022/02/23 -- (GDL) Removed message suppression in file, prefer line.   %
 % 2022/02/22 -- (GDL) Moved change log and future updates to bottom,      %
 %                     reformatted notes.                                  %
