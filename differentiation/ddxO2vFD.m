@@ -91,36 +91,75 @@
 % EXAMPLE 1                                                               %
 %                                                                         %
 % Compute the derivative of the function u = sin(x) on the interval [0,   %
-% pi] using a quasi-second-order, central finite difference scheme with a %
-% grid spacing of 51 points in the form of a geometric series.            %
+% pi] using the quasi-second-order, central finite difference scheme with %
+% a constant grid spacing of pi/50.                                       %
 %                                                                         %
-% >> x       = geospace(0, pi, 51);                                       %
-% >> u       = sin(x).';                                                  %
+% >> dx      = pi/50;                                                     %
+% >> x       = (0:dx:pi).';                                               %
+% >> u       = sin(x);                                                    %
 % >> ux_O2   = ddxO2vFD(u, x);                                            %
-% >> ux_TRUE = cos(x).';                                                  %
+% >> ux_TRUE = cos(x);                                                    %
 % >> E2      = abs(ux_O2 - ux_TRUE);                                      %
 % >> disp(max(E2(:)));                                                    %
-%     0.1416                                                              %
+%     0.0013                                                              %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
 % EXAMPLE 2                                                               %
 %                                                                         %
+% Compute the derivative of the function u = exp(-x) on the interval [2,  %
+% 10] using a quasi-second-order, central finite difference scheme with a %
+% grid of 51 points spaced out as a decreasing geometric series.          %
+%                                                                         %
+% >> x       = geospace(2, 10, 51, 'reverse');                            %
+% >> u       = exp(-x);                                                   %
+% >> ux_O2   = ddxO2vFD(u, x);                                            %
+% >> ux_TRUE = -exp(-x);                                                  %
+% >> E2      = abs(ux_O2 - ux_TRUE);                                      %
+% >> disp(max(E2(:)));                                                    %
+%    1.7176e-04                                                           %
+%                                                                         %
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
+%                                                                         %
+% EXAMPLE 3                                                               %
+%                                                                         %
 % Compute the derivative of the function u = y^2*sin(x) with respect to y %
 % on the interval (x,y) = ([0,pi],[0,1]) using the quasi-second-order,    %
-% central finite difference scheme with a grid spacing of dx = pi/50 and  %
-% a geometric series of 51 points in the y direction.                     %
+% central finite difference scheme with a constant grid spacing of        %
+% (pi/50, 0.01).                                                          %
 %                                                                         %
 % >> dx      = pi/50;                                                     %
+% >> dy      = 0.01;                                                      %
 % >> x       = (0:dx:pi).';                                               %
-% >> y       = geospace(0, 1, 51);                                        %
+% >> y       = (0:dy:1).';                                                %
 % >> [X,Y]   = ndgrid(x,y);                                               %
 % >> u       = (Y.^2).*sin(X);                                            %
 % >> uy_O2   = ddxO2vFD(u, y, 2);                                         %
 % >> uy_TRUE = 2*Y.*sin(X);                                               %
 % >> E2      = abs(uy_O2 - uy_TRUE);                                      %
 % >> disp(max(E2(:)));                                                    %
-%     0.2705                                                              %
+%    5.5955e-14                                                           %
+%                                                                         %
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
+%                                                                         %
+% EXAMPLE 4                                                               %
+%                                                                         %
+% Compute the derivative of the function u = y^2*sin(x) with respect to y %
+% on the interval (x,y) = ([0,pi],[0,1]) using the quasi-second-order,    %
+% central finite difference scheme with a constant grid spacing of in the %
+% x direction of pi/50 and a grid of 25 points in the y direction spaced  %
+% out as an increasing geometric series.                                  %
+%                                                                         %
+% >> dx      = pi/50;                                                     %
+% >> x       = (0:dx:pi).';                                               %
+% >> y       = geospace(0, 1, 25);                                        %
+% >> [X,Y]   = ndgrid(x,y);                                               %
+% >> u       = (Y.^2).*sin(X);                                            %
+% >> uy_O2   = ddxO2vFD(u, y, 2);                                         %
+% >> uy_TRUE = 2*Y.*sin(X);                                               %
+% >> E2      = abs(uy_O2 - uy_TRUE);                                      %
+% >> disp(max(E2(:)));                                                    %
+%    6.5344e-09                                                           %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -146,8 +185,8 @@ check.drc = @(x) validateattributes(x,                                  ...
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'u'   , check.u                 );
-addRequired ( hParser, 'x'   , check.x                 );
+addRequired ( hParser, 'u'   ,               check.u   );
+addRequired ( hParser, 'x'   ,               check.x   );
 addOptional ( hParser, 'drc' , default.drc , check.drc );
 parse(hParser, u, x, varargin{:});
 clear check default;
@@ -175,6 +214,9 @@ if drc > 1
     u       = permute(u, pm);
 end
 szp = sz(pm);
+
+% Ensure that x is a column vector.
+if isrow(x), x = x.'; end
 
 % Initialize the spacing array.
 dx = diff(x);
@@ -232,6 +274,7 @@ clear drc nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/04 -- (GDL) Modified the examples.                              %
 % 2022/03/03 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
