@@ -46,7 +46,8 @@
 % series between two points. This function complements the linspace and   %
 % logspace functions of MATLAB. By default, the spacing decreases from    %
 % the first to the last point. By specifying the 'reverse' option, the    %
-% spacing will instead increase from the first to the last point.         %
+% spacing will instead increase from the first to the last point. This    %
+% function supports variable precision arithmetic.                        %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -63,16 +64,16 @@
 % ======================================================================= %
 % Input Arguments (Required):                                             %
 % ----------------------------------------------------------------------- %
-% 'x1'           LOGICAL/NUMERIC REAL SCALAR                              %
-%              ~ Input scalar. The first point in the array that will be  %
+% 'x1'           LOGICAL/NUMERIC/VPA REAL SCALAR                          %
+%              ~ Array limit 1. The first point in the array that will be %
 %                generated.                                               %
 % ----------------------------------------------------------------------- %
-% 'x2'           LOGICAL/NUMERIC REAL SCALAR                              %
-%              ~ Input scalar. The last point in the array that will be   %
-%                generated. This value must be greater than x1.           %
+% 'x2'           LOGICAL/NUMERIC/VPA REAL SCALAR                          %
+%              ~ Array limit 2. The last point in the array that will be  %
+%                generated.                                               %
 % ----------------------------------------------------------------------- %
 % 'n'            POSITIVE INTEGER SCALAR                                  %
-%              ~ Input scalar. The number of points to generate the array %
+%              ~ Array size. The number of points to generate the array   %
 %                with.                                                    %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
@@ -85,13 +86,13 @@
 % ----------------------------------------------------------------------- %
 % 'tol'          NONNEGATIVE REAL SCALAR                                  %
 %                Default: 10^-6                                           %
-%              ~ Tolerance on the common ratio of the geometric series    %
+%              ~ Tolerance on the common ratio of the geometric series.   %
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
 % 'y'            NUMERIC REAL ARRAY                                       %
 %              ~ Output array. The generated column vector monotonically  %
-%                increasing from x1 to x2.                                %
+%                increasing/decreasing from x1 to x2.                     %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
@@ -124,11 +125,11 @@ default.tol     = 1e-6;
 
 % Input checks.
 check.x1      = @(x) validateattributes(x,                              ...
-                     {'logical', 'numeric'},                            ...
+                     {'logical', 'numeric', 'sym'},                     ...
                      {'finite', 'real', 'scalar'});
 check.x2      = @(x) validateattributes(x,                              ...
-                     {'logical', 'numeric'},                            ...
-                     {'finite', 'real', 'scalar', '>', x1});
+                     {'logical', 'numeric', 'sym'},                     ...
+                     {'finite', 'real', 'scalar'});
 check.n       = @(x) validateattributes(x,                              ...
                      {'logical', 'numeric'},                            ...
                      {'finite', 'integer', 'positive', 'scalar'});
@@ -139,11 +140,11 @@ check.tol     = @(x) validateattributes(x,                              ...
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'x1'      ,                  check.x1      );
-addRequired ( hParser, 'x2'      ,                  check.x2      );
-addRequired ( hParser, 'n'       ,                  check.n       );
-addOptional ( hParser, 'reverse' , default.reverse, check.reverse );
-addParameter( hParser, 'tol'     , default.tol    , check.tol     );
+addRequired ( hParser , 'x1'      ,                   check.x1      );
+addRequired ( hParser , 'x2'      ,                   check.x2      );
+addRequired ( hParser , 'n'       ,                   check.n       );
+addOptional ( hParser , 'reverse' , default.reverse , check.reverse );
+addParameter( hParser , 'tol'     , default.tol     , check.tol     );
 parse(hParser, x1, x2, n, varargin{:});
 clear check;
 
@@ -154,37 +155,37 @@ nargoutchk(0,1);
 %% CREATE THE GEOMETRIC SERIES ARRAY
 
 % Define constants.
-a = 1 + x2 - x1;
-b = x2 - x1;
+a0 = abs(x2 - x1);
+a1 = 1 + a0;
 
 % Strategy:
-% * We need to solve the equation: r^n - a*r + b = 0
+% * We need to solve the equation: r^n - a1*r + a0 = 0
 % * I have thought of two, not necessarily guaranteed, methods. However,
 %   they both seem to work quite well.
 %   1) Use the roots() function of MATLAB and select the real root closest
 %      to the common ratio for the infinite geometric series.
 %      p = [1; zeros(n-2,1); -(1 + x2 - x1); (x2 - x1)];
 %      r = roots(p);
-%      r = min(abs(r(imag(r) == 0) - b/a));
+%      r = min(abs(r(imag(r) == 0) - a0/a1));
 %    * This method is not suitable for large array lengths due to the need
 %      of finding all roots of a very large polynomial equation when we
 %      really just need one.
 %   2) Iteratively solve the equation by rearranging it as:
-%      r_new = ((r_old)^n + b)/a
+%      r_new = ((r_old)^n + a0)/a1
 %    * This is the method I ultimately chose. I use the common ratio for
 %      the infinite geometric series as an initial guess.
 
 % Define the common ratio if the geometric series were infinite.
-r0 = b/a;
+r0 = a0/a1;
 
 % Determine the common ratio.
 dr  = hParser.Results.tol + 1;
 while dr > hParser.Results.tol
-    r  = (r0^n + b)/a;
+    r  = (r0^n + a0)/a1;
     dr = abs(r - r0);
     r0 = r;
 end
-clear a b dr r0;
+clear a0 a1 dr r0;
 
 % Determine the spacings (decreasing from x1 to x2).
 dy = r.^((1:n-1));
@@ -197,8 +198,10 @@ else
 end
 
 % Create the array and force the last point to be exact.
-y    = y.' + x1;
+c    = (-1)^(double(x1) > double(x2));
+y    = x1 + c*y.';
 y(n) = x2;
+clear c;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -224,13 +227,13 @@ y(n) = x2;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/07 -- (GDL) Added support for x1 > x2 and for vpa.              %
 % 2022/03/03 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % FUTURE UPDATES                                                          %
 %                                                                         %
-% Add a name-value pair to use variable precision arithmetic since the    %
-% spacings could get very small.                                          %
+% None foreseen at the moment.                                            %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
