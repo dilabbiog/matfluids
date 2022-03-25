@@ -184,7 +184,7 @@ szp = sz(pm);
 %    they appear moving down column by column.
      idxNZ = find(geom);
 % 2) Compute the differences between successive nodes in "next - current"
-%    form.
+%    form; i.e., id(j) = idxNZ(j+1) - idxNZ(j).
      id = [diff(idxNZ); 0];
 % 3) All leading nodes and interior nodes are identified with +1. There is
 %    also a false positive case identified with +1, namely, when a node is
@@ -199,12 +199,12 @@ szp = sz(pm);
         id(mod(idxNZ,len) == 0) = 0;
 %    c) The last node. This node has already been set to 0 in step 2 to
 %       have the differences in "next - current" form.
-% 5) Compute the differences between the successive id values of the nodes,
-%    this time in "current - previous" form. Note that the very first node
-%    can either be a leading node (id = 1) or a singular node (id = 0). In
-%    order to account for the first node in step 6a, when shifting the
-%    differences down one index ("current - previous" form), use the actual
-%    value of the first node.
+% 5) Compute the differences between the successive id values of the nodes
+%    in "current - previous" form; i.e., idd(j) = id(j) - id(j-1). Note
+%    that the very first node can either be a leading node (id = 1) or a
+%    singular node (id = 0). In order to account for the first node in step
+%    6a, when shifting the differences down one index ("current - previous"
+%    form), use the actual value of the first node.
      idd = [id(1); diff(id)];
 % 6) All leading and trailing nodes can now be identified.
 %    a) When a current node has id = 1 and a previous node has id = 0, the
@@ -287,6 +287,7 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/03/25 -- (GDL) Edited comments.                                    %
 % 2022/03/02 -- (GDL) Added missing support for singular nodes.           %
 % 2022/02/28 -- (GDL) Changed variable names: dir, cond -> drc, id.       %
 % 2022/02/25 -- (GDL) Beta version of the code finalized.                 %
