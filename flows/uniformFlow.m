@@ -2,9 +2,9 @@
 %                                                                         %
 %                         PREDEFINED FLOW TOOLBOX                         %
 %                                                                         %
-% irrotVortex                                                             %
+% uniformFlow                                                             %
 % Potential Flows                                                         %
-% Generate the velocity field of an irrotational vortex                   %
+% Generate the velocity field of a uniform flow                           %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -36,19 +36,19 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% vel = irrotVortex(coord, Gamma, a);                                     %
-% [vel, cvp] = irrotVortex(coord, Gamma, a);                              %
-% [vel, cvp, vgt] = irrotVortex(coord, Gamma, a);                         %
-% [___] = irrotVortex(coord, Gamma, a, ctr);                              %
+% vel = uniformFlow(coord, Uinf);                                         %
+% [vel, cvp] = uniformFlow(coord, Uinf);                                  %
+% [vel, cvp, vgt] = uniformFlow(coord, Uinf);                             %
+% [___] = uniformFlow(coord, Uinf, alpha);                                %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Generate the velocity field for a classical irrotational (or potential) %
-% vortex with strength (or circulation) Gamma. The coordinates of the     %
-% vortex centre can also be specified, the default location being at the  %
-% origin. The complex velocity potential and velocity gradient tensor may %
-% also be generated. The governing equations can be found in nearly any   %
-% fluid dynamics textbook such as [1,2].                                  %
+% Generate the velocity field for a uniform flow with speed Uinf. The     %
+% angle of the uniform flow, measured clockwise from the positive x axis, %
+% can be specified, the default angle being zero. The complex velocity    %
+% potential and the velocity gradient tensor may also be generated. The   %
+% governing equations can be found in nearly any fluid dynamics textbook  %
+% such as [1,2].                                                          %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -78,22 +78,16 @@
 %                that strictly increases/decreases monotonically from the %
 %                first row to the last.                                   %
 % ----------------------------------------------------------------------- %
-% 'Gamma'        REAL FINITE SCALAR                                       %
-%              ~ Vortex circulation. Rotational strength (or circulation) %
-%                of the irrotational vortex. A positive value corresponds %
-%                to counterclockwise rotation.                            %
-% ----------------------------------------------------------------------- %
-% 'a'            POSITIVE REAL FINITE SCALAR                              %
-%              ~ Radius. Radius at which the stream function is set equal %
-%                to zero.                                                 %
+% 'Uinf'         REAL FINITE SCALAR                                       %
+%              ~ Flow speed. Speed of the uniform flow. A positive value  %
+%                corresponds to flow in the positive x direction.         %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
-% 'ctr'          REAL FINITE TWO-ELEMENT VECTOR                           %
-%                Default: [0 0]                                           %
-%              ~ Vortex centre. Location of the centre of the vortex      %
-%                relative to the origin. The centre location is specified %
-%                as [x y].                                                %
+% 'alpha'        REAL FINITE SCALAR                                       %
+%                Default: 0                                               %
+%              ~ Flow angle. Angle of the uniform flow measured           %
+%                counterclockwise from the positive x axis.               %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
@@ -128,68 +122,61 @@
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Generate an irrotational vortex on the domain (x,y) = ([-1,1],[-1,1])   %
-% with a constant grid spacing of 0.01. Use a circulation of Gamma = 5    %
-% and a zero stream function radius of 1.                                 %
+% Generate a uniform flw on the domain (x,y) = ([-1,1],[-1,1]) with a     %
+% constant grid spacing of 0.01. Use a flow speed of 1.                   %
 %                                                                         %
 % >> coord.x = linspace(-1, 1, 201).';                                    %
 % >> coord.y = linspace(-1, 1, 201).';                                    %
-% >> Gamma   = 5;                                                         %
-% >> a       = 1;                                                         %
-% >> vel     = irrotVortex(coord, Gamma, a);                              %
+% >> Uinf    = 1;                                                         %
+% >> vel     = uniformFlow(coord, Uinf);                                  %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [vel, varargout] = irrotVortex(coord, Gamma, a, varargin)
+function [vel, varargout] = uniformFlow(coord, Uinf, varargin)
 
 
 %% PARSE INPUTS
 
 % Input defaults.
-default.ctr = [0 0];
+default.alpha = 0;
 
 % Input checks.
 check.coord = @(x) examineCoord(x, ["x" "y"], 'all');
-check.Gamma = @(x) validateattributes(x,                                ...
+check.Uinf  = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
                    {'finite', 'real', 'scalar'});
-check.a     = @(x) validateattributes(x,                                ...
+check.alpha = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
-                   {'finite', 'real', 'positive', 'scalar'});
-check.ctr   = @(x) validateattributes(x,                                ...
-                   {'logical', 'numeric'},                              ...
-                   {'finite', 'real', 'vector', 'numel', 2});
+                   {'finite', 'real', 'scalar'});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'coord' ,               check.coord );
-addRequired ( hParser, 'Gamma' ,               check.Gamma );
-addRequired ( hParser, 'a'     ,               check.a     );
-addOptional ( hParser, 'ctr'   , default.ctr , check.ctr   );
-parse(hParser, coord, Gamma, a, varargin{:});
+addRequired ( hParser, 'coord' ,                 check.coord );
+addRequired ( hParser, 'Uinf'  ,                 check.Uinf  );
+addOptional ( hParser, 'alpha' , default.alpha , check.alpha );
+parse(hParser, coord, Uinf, varargin{:});
 clear check default;
 
 % Additional verifications.
-narginchk(3,4);
+narginchk(2,3);
 nargoutchk(0,3);
 
 
 %% COMPLEX VELOCITY POTENTIAL
 
 % Transform the coordinates.
-zc     = hParser.Results.ctr(1) + 1i*hParser.Results.ctr(2);
+alpha  = hParser.Results.alpha;
 z0     = coord.x + 1i*coord.y;
-z      = z0 - zc;
+z      = z0*exp(-1i*alpha);
 [X, Y] = ndgrid(real(z), imag(z));
 Z      = X + 1i*Y;
-dZ     = ones(size(Z));
-clear X Y z z0 zc;
+dZ     = exp(-1i*alpha)*ones(size(Z));
+clear alpha X Y z z0;
 
 % Define the complex velocity potential.
-cvp = -1i*(Gamma/2/pi)*log(Z/a);
+cvp = Uinf*Z;
 if nargout > 1, varargout{1} = cvp; end
-
 
 %% VELOCITY FIELD
 
@@ -197,7 +184,7 @@ if nargout > 1, varargout{1} = cvp; end
 vel = struct('u' , 0, 'v' , 0);
 
 % Compute the velocity field.
-dcvp  = -1i*(Gamma/2/pi)*dZ./Z;
+dcvp  = Uinf*dZ;
 vel.u =  real(dcvp);
 vel.v = -imag(dcvp);
 clear cvp dcvp dZ Z;
@@ -208,12 +195,6 @@ clear cvp dcvp dZ Z;
 if nargout > 2
     % Initialize the velocity gradient tensor.
     varargout{2} = struct('ux' , 0, 'uy' , 0, 'vx' , 0, 'vy' , 0);
-
-    % Compute the velocity gradient tensor.
-    varargout{2}.ux = -(4*pi/Gamma)*vel.u.*vel.v;
-    varargout{2}.uy = -(2*pi/Gamma)*vel.v.^2;
-    varargout{2}.vx =  (2*pi/Gamma)*vel.u.^2;
-    varargout{2}.vy = -varargout{2}.ux;
 end
 
 
@@ -240,9 +221,7 @@ end
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2022/05/19 -- (GDL) Simplified the code, added radius parameter.        %
-% 2022/03/18 -- (GDL) Added narginchk.                                    %
-% 2022/03/04 -- (GDL) Beta version of the code finalized.                 %
+% 2022/05/19 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %

@@ -32,11 +32,37 @@
 			\begin{subequations}
 				\label{eq:UniformFlowDef}
 				\begin{align}
-					\phi\left(x,y\right) &= U_{\infty}\left(x\cos\left(\alpha\right) + y\sin\left(\alpha\right)\right),\label{eq:UniformFlowDefPhi}\\
-					\psi\left(x,y\right) &= U_{\infty}\left(y\cos\left(\alpha\right) - x\sin\left(\alpha\right)\right),\label{eq:UniformFlowDefPsi}
+					\phi\left(x,y\right) &= U_{\infty}x,\label{eq:UniformFlowDefPhi}\\
+					\psi\left(x,y\right) &= U_{\infty}y,\label{eq:UniformFlowDefPsi}
 				\end{align}
 			\end{subequations}
-			where $U_{\infty}$ denotes the constant velocity magnitude of the flow and $\alpha$ the angle of the flow measured counterclockwise from the positive $x$ axis. The corresponding velocity components are therefore given by
+			where $U_{\infty}$ denotes the constant velocity magnitude of the flow oriented in the positive $x$ direction. In polar coordinates, we have
+			\begin{subequations}
+				\label{eq:UniformFlowPDef}
+				\begin{align}
+					\phi\left(r,\theta\right) &= U_{\infty}r\cos\theta,\label{eq:UniformFlowPDefPhi}\\
+					\psi\left(r,\theta\right) &= U_{\infty}r\sin\theta,\label{eq:UniformFlowPDefPsi}
+				\end{align}
+			\end{subequations}
+			The potential and stream functions can be written compactly using the complex potential function ($\Phi = \phi + i\psi$) and the complex coordinate $z = re^{i\theta} = x + iy$,
+			\begin{equation}
+				\label{eq:UniformFlowDefPHI}
+				\Phi\left(z\right) = U_{\infty}z.
+			\end{equation}
+			We can use the coordinate transformation $z \rightarrow z^{\prime}e^{-i\alpha}$ to produce a uniform flow inclined at an angle $\alpha$, measured counterclockwise from the positive $x^{\prime}$ axis, in the $z^{\prime}$ coordinate system. Dropping the primes, the complex potential function can be expressed as
+			\begin{equation}
+				\label{eq:UniformFlowDefPHI2}
+				\Phi\left(z\right) = U_{\infty}ze^{-i\alpha}
+			\end{equation}
+			or, expanding in rectangular and polar coordinates,
+			\begin{subequations}
+				\label{eq:UniformFlowDef2}
+				\begin{alignat}{2}
+					\phi &= U_{\infty}\left(x\cos\left(\alpha\right) + y\sin\left(\alpha\right)\right) &&= U_{\infty}r\cos\left(\theta-\alpha\right),\label{eq:UniformFlowDefPhi2}\\
+					\psi &= U_{\infty}\left(y\cos\left(\alpha\right) - x\sin\left(\alpha\right)\right) &&= U_{\infty}r\sin\left(\theta-\alpha\right).\label{eq:UniformFlowDefPsi2}
+				\end{alignat}
+			\end{subequations}
+			The corresponding velocity components are then given by
 			\begin{subequations}
 				\label{eq:UniformFlowVel}
 				\begin{alignat}{4}
@@ -55,10 +81,15 @@
 			\label{eq:IrrotVortexDefsPolar}
 				\begin{alignat}{2}
 					\phi\left(r,\theta\right) &=  &&\frac{\Gamma}{2\pi}\theta,\label{eq:IrrotVortexDefsPolarPhi}\\
-					\psi\left(r,\theta\right) &= -&&\frac{\Gamma}{2\pi}\ln\left(r\right),\label{eq:IrrotVortexDefsPolarPsi}
+					\psi\left(r,\theta\right) &= -&&\frac{\Gamma}{2\pi}\ln\left(\frac{r}{a}\right),\label{eq:IrrotVortexDefsPolarPsi}
 				\end{alignat}
 			\end{subequations}
-			where $\Gamma$ is the circulation (or strength) of the vortex. The corresponding velocity components in polar coordinates are therefore given by
+			where $\Gamma$ is the circulation or strength of the vortex (positive counterclockwise) and $a$ is the radius at which the stream function is zero. The complex potential function is given by
+			\begin{equation}
+				\label{eq:IrrotVortexDefPHI}
+				\Phi\left(z\right) = -i\frac{\Gamma}{2\pi}\ln\left(\frac{z}{a}\right).
+			\end{equation}
+			We can use the coordinate transformation $z \rightarrow z^{\prime} - z^{\prime}_c$ to produce an irrotational vortex whose centre is located at $z^{\prime}_c$ in the $z^{\prime}$ coordinate system. The corresponding velocity components in polar coordinates are therefore given by
 			\begin{subequations}
 			\label{eq:IrrotVortexVelPolar}
 				\begin{alignat}{5}
@@ -85,11 +116,11 @@
 			The components of the velocity gradient tensor are then given by
 			\begin{subequations}
 			\label{eq:IrrotVortexVgt}
-				\begin{alignat}{2}
-					\frac{\partial u}{\partial x} &= &&\frac{\Gamma}{2\pi}\frac{2xy}{\left(x^2 + y^2\right)^2},\label{eq:IrrotVortexVgtUx}\\
-					\frac{\partial u}{\partial y} &= -&&\frac{\Gamma}{2\pi}\frac{x^2}{\left(x^2 + y^2\right)^2},\label{eq:IrrotVortexVgtUy}\\
-					\frac{\partial v}{\partial x} &= &&\frac{\Gamma}{2\pi}\frac{y^2}{\left(x^2 + y^2\right)^2},\label{eq:IrrotVortexVgtVx}\\
-					\frac{\partial v}{\partial y} &= -&&\frac{\Gamma}{2\pi}\frac{2xy}{\left(x^2 + y^2\right)^2}.\label{eq:IrrotVortexVgtVy}
+				\begin{alignat}{4}
+					\frac{\partial u}{\partial x} &= &&\frac{\Gamma}{2\pi}\frac{2xy}{\left(x^2 + y^2\right)^2} &&= -&&\frac{4\pi}{\Gamma}uv,\label{eq:IrrotVortexVgtUx}\\
+					\frac{\partial u}{\partial y} &= -&&\frac{\Gamma}{2\pi}\frac{x^2}{\left(x^2 + y^2\right)^2} &&= -&&\frac{2\pi}{\Gamma}v^2,\label{eq:IrrotVortexVgtUy}\\
+					\frac{\partial v}{\partial x} &= &&\frac{\Gamma}{2\pi}\frac{y^2}{\left(x^2 + y^2\right)^2} &&= &&\frac{2\pi}{\Gamma}u^2,\label{eq:IrrotVortexVgtVx}\\
+					\frac{\partial v}{\partial y} &= -&&\frac{\Gamma}{2\pi}\frac{2xy}{\left(x^2 + y^2\right)^2} &&= &&\frac{4\pi}{\Gamma}uv.\label{eq:IrrotVortexVgtVy}
 				\end{alignat}
 			\end{subequations}
 			
@@ -105,8 +136,9 @@
 				`\\[-4.75ex]`
 				`\MATcommand` coord.x = linspace(-1, 1, 51).';
 				`\MATcommand` coord.y = coord.x;
-				`\MATcommand` gamma = 1;
-				`\MATcommand` [vel,vgt] = irrotVortex(coord, gamma);
+				`\MATcommand` Gamma = 1;
+				`\MATcommand` a = 1;
+				`\MATcommand` [vel,cvp,vgt] = irrotVortex(coord, Gamma, a);
 			\end{lstlisting}
 			
 		\section{\label{sec:RotVortex}The Rotational (or Solid Body) Vortex}
