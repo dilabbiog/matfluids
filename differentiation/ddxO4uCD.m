@@ -222,7 +222,9 @@ b(end,idx{:}) = -(bnode.a*u(end,idx{:}) + bnode.b*u(end-1,idx{:})     ...
 b(2:end-1,idx{:}) = inode.a*(u(3:end,idx{:}) - u(1:end-2,idx{:}))/(2*dx);
 
 % Compute the derivative.
+b  = reshape(b, [szp(1) prod(szp(2:end))]);
 du = A\b;
+du = reshape(du, szp);
 clear A b;
 
 % Inverse permute the derivative.
@@ -255,6 +257,7 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/05/26 -- (GDL) Added reshaping of b to account for nd arrays.      %
 % 2022/03/03 -- (GDL) Changed derivative function naming convention.      %
 % 2022/03/02 -- (GDL) Adjusted lower-order boundary schemes.              %
 % 2022/03/02 -- (GDL) Changed function name (it is fourth order).         %
@@ -269,6 +272,8 @@ clear drc len nd pm sz szp;
 %                                                                         %
 % FUTURE UPDATES                                                          %
 %                                                                         %
-% None foreseen at the moment.                                            %
+% Currently, b is reshaped to account for n-dimensional arrays. However,  %
+% in R2022a, there is a pagemldivide function that can avoid this step.   %
+% This needs to be tested and the code updated if performance improves.   %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

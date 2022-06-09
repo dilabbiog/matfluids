@@ -39,16 +39,18 @@
 % vel = uniformFlow(coord, Uinf);                                         %
 % [vel, cvp] = uniformFlow(coord, Uinf);                                  %
 % [vel, cvp, vgt] = uniformFlow(coord, Uinf);                             %
-% [___] = uniformFlow(coord, Uinf, alpha);                                %
+% [___] = uniformFlow(coord, Uinf, ctr);                                  %
+% [___] = uniformFlow(coord, Uinf, ctr, alpha);                           %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Generate the velocity field for a uniform flow with speed Uinf. The     %
-% angle of the uniform flow, measured clockwise from the positive x axis, %
-% can be specified, the default angle being zero. The complex velocity    %
-% potential and the velocity gradient tensor may also be generated. The   %
-% governing equations can be found in nearly any fluid dynamics textbook  %
-% such as [1,2].                                                          %
+% Generate the velocity field for a uniform flow with speed Uinf. A       %
+% translation and rotation of the potential flow can also be specified,   %
+% the angle being measured counterclockwise from the positive x axis. The %
+% default location is at the origin and the default angle is zero. The    %
+% complex velocity potential and the velocity gradient tensor may also be %
+% generated. The governing equations can be found in nearly any fluid     %
+% dynamics textbook such as [1,2].                                        %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -84,10 +86,17 @@
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
+% 'ctr'          REAL FINITE TWO-ELEMENT VECTOR                           %
+%                Default: [0 0]                                           %
+%              ~ Potential flow centre. Location, relative to the origin, %
+%                at which the complex velocity potential is zero. The     %
+%                centre location is specified as [x y].                   %
+% ----------------------------------------------------------------------- %
 % 'alpha'        REAL FINITE SCALAR                                       %
 %                Default: 0                                               %
-%              ~ Flow angle. Angle of the uniform flow measured           %
-%                counterclockwise from the positive x axis.               %
+%              ~ Potential flow angle. Rotation of the potential flow by  %
+%                an angle measured counterclockwise from the positive x   %
+%                axis.                                                    %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
@@ -139,6 +148,7 @@ function [vel, varargout] = uniformFlow(coord, Uinf, varargin)
 %% PARSE INPUTS
 
 % Input defaults.
+default.ctr   = [0 0];
 default.alpha = 0;
 
 % Input checks.
@@ -146,6 +156,9 @@ check.coord = @(x) examineCoord(x, ["x" "y"], 'all');
 check.Uinf  = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
                    {'finite', 'real', 'scalar'});
+check.ctr   = @(x) validateattributes(x,                                ...
+                   {'logical', 'numeric'},                              ...
+                   {'finite', 'real', 'vector', 'numel', 2});
 check.alpha = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
                    {'finite', 'real', 'scalar'});
@@ -154,25 +167,27 @@ check.alpha = @(x) validateattributes(x,                                ...
 hParser = inputParser;
 addRequired ( hParser, 'coord' ,                 check.coord );
 addRequired ( hParser, 'Uinf'  ,                 check.Uinf  );
+addOptional ( hParser, 'ctr'   , default.ctr   , check.ctr   );
 addOptional ( hParser, 'alpha' , default.alpha , check.alpha );
 parse(hParser, coord, Uinf, varargin{:});
 clear check default;
 
 % Additional verifications.
-narginchk(2,3);
+narginchk(2,4);
 nargoutchk(0,3);
 
 
 %% COMPLEX VELOCITY POTENTIAL
 
 % Transform the coordinates.
-alpha  = hParser.Results.alpha;
-z0     = coord.x + 1i*coord.y;
-z      = z0*exp(-1i*alpha);
-[X, Y] = ndgrid(real(z), imag(z));
-Z      = X + 1i*Y;
-dZ     = exp(-1i*alpha)*ones(size(Z));
-clear alpha X Y z z0;
+zc      = hParser.Results.ctr(1) + 1i*hParser.Results.ctr(2);
+alpha   = hParser.Results.alpha;
+[X0,Y0] = ndgrid(coord.x, coord.y);
+Z0      = X0 + 1i*Y0;
+Zp      = Z0 - zc;
+Z       = Zp*exp(-1i*alpha);
+dZ      = exp(-1i*alpha)*ones(size(Z));
+clear alpha X0 Y0 Z0 zc;
 
 % Define the complex velocity potential.
 cvp = Uinf*Z;
@@ -192,10 +207,13 @@ clear cvp dcvp dZ Z;
 
 %% VELOCITY GRADIENT TENSOR
 
+X = real(Zp);
+Y = imag(Zp);
 if nargout > 2
     % Initialize the velocity gradient tensor.
     varargout{2} = struct('ux' , 0, 'uy' , 0, 'vx' , 0, 'vy' , 0);
 end
+clear X Y Zp;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -221,6 +239,9 @@ end
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/06/09 -- (GDL) Fixed grid error.                                   %
+% 2022/06/09 -- (GDL) Added centre variable to set zero potential point.  %
+% 2022/05/20 -- (GDL) Style modifications for consistency purposes.       %
 % 2022/05/19 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%

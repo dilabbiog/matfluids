@@ -2,9 +2,9 @@
 %                                                                         %
 %                         PREDEFINED FLOW TOOLBOX                         %
 %                                                                         %
-% irrotVortex                                                             %
+% doubletFlow                                                             %
 % Potential Flows                                                         %
-% Generate the velocity field of an irrotational vortex                   %
+% Generate the velocity field of a doublet or dipole                      %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -36,22 +36,21 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% vel = irrotVortex(coord, Gamma, a);                                     %
-% [vel, cvp] = irrotVortex(coord, Gamma, a);                              %
-% [vel, cvp, vgt] = irrotVortex(coord, Gamma, a);                         %
-% [___] = irrotVortex(coord, Gamma, a, ctr);                              %
-% [___] = irrotVortex(coord, Gamma, a, ctr, alpha);                       %
+% vel = doubletFlow(coord, kappa);                                        %
+% [vel, cvp] = doubletFlow(coord, kappa);                                 %
+% [vel, cvp, vgt] = doubletFlow(coord, kappa);                            %
+% [___] = doubletFlow(coord, kappa, ctr);                                 %
+% [___] = doubletFlow(coord, kappa, ctr, alpha);                          %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Generate the velocity field for a classical irrotational (or potential) %
-% vortex with strength (or circulation) Gamma. A translation and rotation %
-% of the potential flow can also be specified, the angle being measured   %
-% counterclockwise from the positive x axis. The default location is at   %
-% the origin and the default angle is zero. The complex velocity          %
-% potential and the velocity gradient tensor may also be generated. The   %
-% governing equations can be found in nearly any fluid dynamics textbook  %
-% such as [1,2].                                                          %
+% Generate the velocity field for a classical doublet flow (or dipole)    %
+% with strength kappa. A translation and rotation of the potential flow   %
+% can also be specified, the angle being measured counterclockwise from   %
+% the positive x axis. The default location is at the origin and the      %
+% default angle is zero. The complex velocity potential and the velocity  %
+% gradient tensor may also be generated. The governing equations can be   %
+% found in nearly any fluid dynamics textbook such as [1,2].              %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -81,14 +80,8 @@
 %                that strictly increases/decreases monotonically from the %
 %                first row to the last.                                   %
 % ----------------------------------------------------------------------- %
-% 'Gamma'        REAL FINITE SCALAR                                       %
-%              ~ Vortex circulation. Rotational strength (or circulation) %
-%                of the irrotational vortex. A positive value corresponds %
-%                to counterclockwise rotation.                            %
-% ----------------------------------------------------------------------- %
-% 'a'            POSITIVE REAL FINITE SCALAR                              %
-%              ~ Radius. Radius at which the stream function is set equal %
-%                to zero.                                                 %
+% 'kappa'        REAL FINITE SCALAR                                       %
+%              ~ Doublet strength. Strength of the doublet flow.          %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
@@ -137,36 +130,31 @@
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Generate an irrotational vortex on the domain (x,y) = ([-1,1],[-1,1])   %
-% with a constant grid spacing of 0.01. Use a circulation of Gamma = 5    %
-% and a zero stream function radius of 1.                                 %
+% Generate a doublet flow on the domain (x,y) = ([-1,1],[-1,1]) with a    %
+% constant grid spacing of 0.01. Use a doublet strength of kappa = 5.     %
 %                                                                         %
 % >> coord.x = linspace(-1, 1, 201).';                                    %
 % >> coord.y = linspace(-1, 1, 201).';                                    %
-% >> Gamma   = 5;                                                         %
-% >> a       = 1;                                                         %
-% >> vel     = irrotVortex(coord, Gamma, a);                              %
+% >> kappa   = 5;                                                         %
+% >> vel     = doubletFlow(coord, kappa);                                 %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [vel, varargout] = irrotVortex(coord, Gamma, a, varargin)
+function [vel, varargout] = doubletFlow(coord, kappa, varargin)
 
 
 %% PARSE INPUTS
 
 % Input defaults.
-default.ctr = [0 0];
+default.ctr   = [0 0];
 default.alpha = 0;
 
 % Input checks.
 check.coord = @(x) examineCoord(x, ["x" "y"], 'all');
-check.Gamma = @(x) validateattributes(x,                                ...
+check.kappa = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
                    {'finite', 'real', 'scalar'});
-check.a     = @(x) validateattributes(x,                                ...
-                   {'logical', 'numeric'},                              ...
-                   {'finite', 'real', 'positive', 'scalar'});
 check.ctr   = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
                    {'finite', 'real', 'vector', 'numel', 2});
@@ -177,15 +165,14 @@ check.alpha = @(x) validateattributes(x,                                ...
 % Parse the inputs.
 hParser = inputParser;
 addRequired ( hParser, 'coord' ,                 check.coord );
-addRequired ( hParser, 'Gamma' ,                 check.Gamma );
-addRequired ( hParser, 'a'     ,                 check.a     );
+addRequired ( hParser, 'kappa' ,                 check.kappa );
 addOptional ( hParser, 'ctr'   , default.ctr   , check.ctr   );
 addOptional ( hParser, 'alpha' , default.alpha , check.alpha );
-parse(hParser, coord, Gamma, a, varargin{:});
+parse(hParser, coord, kappa, varargin{:});
 clear check default;
 
 % Additional verifications.
-narginchk(3,5);
+narginchk(2,4);
 nargoutchk(0,3);
 
 
@@ -202,7 +189,7 @@ dZ      = exp(-1i*alpha)*ones(size(Z));
 clear alpha X0 Y0 Z0 zc;
 
 % Define the complex velocity potential.
-cvp = -1i*(Gamma/2/pi)*log(Z/a);
+cvp = (kappa/2/pi)./Z;
 if nargout > 1, varargout{1} = cvp; end
 
 
@@ -212,7 +199,7 @@ if nargout > 1, varargout{1} = cvp; end
 vel = struct('u' , 0, 'v' , 0);
 
 % Compute the velocity field.
-dcvp  = -1i*(Gamma/2/pi)*dZ./Z;
+dcvp  = -(kappa/2/pi)*dZ./Z.^2;
 vel.u =  real(dcvp);
 vel.v = -imag(dcvp);
 clear cvp dcvp dZ Z;
@@ -227,8 +214,8 @@ if nargout > 2
     varargout{2} = struct('ux' , 0, 'uy' , 0, 'vx' , 0, 'vy' , 0);
 
     % Compute the velocity gradient tensor.
-    varargout{2}.ux = -(4*pi/Gamma)*vel.u.*vel.v;
-    varargout{2}.uy =  (2*pi/Gamma)*(vel.u.^2 - vel.v.^2);
+    varargout{2}.ux =  2*(Y.*vel.v - X.*vel.u)./(X.^2 + Y.^2);
+    varargout{2}.uy = -2*(Y.*vel.u + X.*vel.v)./(X.^2 + Y.^2);
     varargout{2}.vx =  varargout{2}.uy;
     varargout{2}.vy = -varargout{2}.ux;
 end
@@ -259,11 +246,8 @@ clear X Y Zp;
 % CHANGE LOG                                                              %
 %                                                                         %
 % 2022/06/09 -- (GDL) Fixed grid error.                                   %
-% 2022/06/09 -- (GDL) Added angle variable to set zero potential point.   %
-% 2022/05/20 -- (GDL) Corrected velocity gradient tensor.                 %
-% 2022/05/19 -- (GDL) Simplified the code, added radius parameter.        %
-% 2022/03/18 -- (GDL) Added narginchk.                                    %
-% 2022/03/04 -- (GDL) Beta version of the code finalized.                 %
+% 2022/06/09 -- (GDL) Edited header text.                                 %
+% 2022/05/20 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
