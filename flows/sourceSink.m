@@ -2,9 +2,9 @@
 %                                                                         %
 %                         PREDEFINED FLOW TOOLBOX                         %
 %                                                                         %
-% irrotVortex                                                             %
+% sourceSink                                                              %
 % Potential Flows                                                         %
-% Generate the velocity field of an irrotational vortex                   %
+% Generate the velocity field of a source or a sink                       %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -36,23 +36,23 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% vel = irrotVortex(coord, Gamma, a);                                     %
-% [vel, cvp] = irrotVortex(coord, Gamma, a);                              %
-% [vel, cvp, vgt] = irrotVortex(coord, Gamma, a);                         %
-% [___] = irrotVortex(coord, Gamma, a, ctr);                              %
-% [___] = irrotVortex(coord, Gamma, a, ctr, alpha);                       %
+% vel = sourceSink(coord, q, a);                                          %
+% [vel, cvp] = sourceSink(coord, q, a);                                   %
+% [vel, cvp, vgt] = sourceSink(coord, q, a);                              %
+% [___] = sourceSink(coord, q, a, ctr);                                   %
+% [___] = sourceSink(coord, q, a, ctr, alpha);                            %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Generate the velocity field for a classical irrotational (or potential) %
-% vortex with strength (or circulation) Gamma. The radius 'a' serves to   %
-% define the radius along which the complex velocity potential is zero. A %
-% translation and rotation of the potential flow can also be specified,   %
-% the angle being measured counterclockwise from the positive x axis. The %
-% default location is at the origin and the default angle is zero. The    %
-% complex velocity potential and the velocity gradient tensor may also be %
-% generated. The governing equations can be found in nearly any fluid     %
-% dynamics textbook such as [1,2].                                        %
+% Generate the velocity field for a classical source or sink flow with    %
+% strength q. The radius 'a' serves to define the radius along which the  %
+% complex velocity potential is zero.A translation and rotation of the    %
+% potential flow can also be specified, the angle being measured          %
+% counterclockwise from the positive x axis. The default location is at   %
+% the origin and the default angle is zero. The complex velocity          %
+% potential and the velocity gradient tensor may also be generated. The   %
+% governing equations can be found in nearly any fluid dynamics textbook  %
+% such as [1,2].                                                          %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -82,10 +82,9 @@
 %                that strictly increases/decreases monotonically from the %
 %                first row to the last.                                   %
 % ----------------------------------------------------------------------- %
-% 'Gamma'        REAL FINITE SCALAR                                       %
-%              ~ Vortex circulation. Rotational strength (or circulation) %
-%                of the irrotational vortex. A positive value corresponds %
-%                to counterclockwise rotation.                            %
+% 'q'            REAL FINITE SCALAR                                       %
+%              ~ Source/sink strength. Strength of the source (positive)  %
+%                or sink (negative) flow.                                 %
 % ----------------------------------------------------------------------- %
 % 'a'            POSITIVE REAL FINITE SCALAR                              %
 %              ~ Radius. Radius at which the complex velocity potential   %
@@ -138,31 +137,31 @@
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Generate an irrotational vortex on the domain (x,y) = ([-1,1],[-1,1])   %
-% with a constant grid spacing of 0.01. Use a circulation of Gamma = 5    %
-% and a zero complex potential radius of 1.                               %
+% Generate a source flow on the domain (x,y) = ([-1,1],[-1,1]) with a     %
+% constant grid spacing of 0.01. Use a source strength of q = 5 and a     %
+% zero complex potential radius of 1.                                     %
 %                                                                         %
 % >> coord.x = linspace(-1, 1, 201).';                                    %
 % >> coord.y = linspace(-1, 1, 201).';                                    %
-% >> Gamma   = 5;                                                         %
+% >> q       = 5;                                                         %
 % >> a       = 1;                                                         %
-% >> vel     = irrotVortex(coord, Gamma, a);                              %
+% >> vel     = sourceSink(coord, q, a);                                   %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [vel, varargout] = irrotVortex(coord, Gamma, a, varargin)
+function [vel, varargout] = sourceSink(coord, q, a, varargin)
 
 
 %% PARSE INPUTS
 
 % Input defaults.
-default.ctr = [0 0];
+default.ctr   = [0 0];
 default.alpha = 0;
 
 % Input checks.
 check.coord = @(x) examineCoord(x, ["x" "y"], 'all');
-check.Gamma = @(x) validateattributes(x,                                ...
+check.q     = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
                    {'finite', 'real', 'scalar'});
 check.a     = @(x) validateattributes(x,                                ...
@@ -178,11 +177,11 @@ check.alpha = @(x) validateattributes(x,                                ...
 % Parse the inputs.
 hParser = inputParser;
 addRequired ( hParser, 'coord' ,                 check.coord );
-addRequired ( hParser, 'Gamma' ,                 check.Gamma );
+addRequired ( hParser, 'q'     ,                 check.q     );
 addRequired ( hParser, 'a'     ,                 check.a     );
 addOptional ( hParser, 'ctr'   , default.ctr   , check.ctr   );
 addOptional ( hParser, 'alpha' , default.alpha , check.alpha );
-parse(hParser, coord, Gamma, a, varargin{:});
+parse(hParser, coord, q, a, varargin{:});
 clear check default;
 
 % Additional verifications.
@@ -203,7 +202,7 @@ dZ      = exp(-1i*alpha)*ones(size(Z));
 clear alpha X0 Y0 Z0 zc;
 
 % Define the complex velocity potential.
-cvp = -1i*(Gamma/2/pi)*log(Z/a);
+cvp = (q/2/pi)*log(Z/a);
 if nargout > 1, varargout{1} = cvp; end
 
 
@@ -213,7 +212,7 @@ if nargout > 1, varargout{1} = cvp; end
 vel = struct('u' , 0, 'v' , 0);
 
 % Compute the velocity field.
-dcvp  = -1i*(Gamma/2/pi)*dZ./Z;
+dcvp  = (q/2/pi)*dZ./Z;
 vel.u =  real(dcvp);
 vel.v = -imag(dcvp);
 clear cvp dcvp dZ Z;
@@ -228,8 +227,8 @@ if nargout > 2
     varargout{2} = struct('ux' , 0, 'uy' , 0, 'vx' , 0, 'vy' , 0);
 
     % Compute the velocity gradient tensor.
-    varargout{2}.ux = -(4*pi/Gamma)*vel.u.*vel.v;
-    varargout{2}.uy =  (2*pi/Gamma)*(vel.u.^2 - vel.v.^2);
+    varargout{2}.ux =  (2*pi/q)*(vel.v.^2 - vel.u.^2);
+    varargout{2}.uy = -(4*pi/q)*vel.u.*vel.v;
     varargout{2}.vx =  varargout{2}.uy;
     varargout{2}.vy = -varargout{2}.ux;
 end
@@ -259,13 +258,7 @@ clear X Y Zp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2022/06/10 -- (GDL) Edited header text.                                 %
-% 2022/06/09 -- (GDL) Fixed grid error.                                   %
-% 2022/06/09 -- (GDL) Added angle variable to set zero potential point.   %
-% 2022/05/20 -- (GDL) Corrected velocity gradient tensor.                 %
-% 2022/05/19 -- (GDL) Simplified the code, added radius parameter.        %
-% 2022/03/18 -- (GDL) Added narginchk.                                    %
-% 2022/03/04 -- (GDL) Beta version of the code finalized.                 %
+% 2022/06/10 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %

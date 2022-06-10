@@ -2,9 +2,9 @@
 %                                                                         %
 %                         PREDEFINED FLOW TOOLBOX                         %
 %                                                                         %
-% irrotVortex                                                             %
-% Potential Flows                                                         %
-% Generate the velocity field of an irrotational vortex                   %
+% doubleGyre                                                              %
+% Model Flows                                                             %
+% Generate the velocity field of a double gyre                            %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -36,23 +36,21 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
-% vel = irrotVortex(coord, Gamma, a);                                     %
-% [vel, cvp] = irrotVortex(coord, Gamma, a);                              %
-% [vel, cvp, vgt] = irrotVortex(coord, Gamma, a);                         %
-% [___] = irrotVortex(coord, Gamma, a, ctr);                              %
-% [___] = irrotVortex(coord, Gamma, a, ctr, alpha);                       %
+% vel = doubleGyre(coord, A, epsi, omega);                                %
+% [vel, psi] = doubleGyre(coord, A, epsi, omega);                         %
+% [vel, psi, vgt] = doubleGyre(coord, A, epsi, omega);                    %
+% [___] = doubleGyre(coord, A, epsi, omega, ctr);                         %
+% [___] = doubleGyre(coord, A, epsi, omega, ctr, alpha);                  %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Generate the velocity field for a classical irrotational (or potential) %
-% vortex with strength (or circulation) Gamma. The radius 'a' serves to   %
-% define the radius along which the complex velocity potential is zero. A %
-% translation and rotation of the potential flow can also be specified,   %
-% the angle being measured counterclockwise from the positive x axis. The %
-% default location is at the origin and the default angle is zero. The    %
-% complex velocity potential and the velocity gradient tensor may also be %
-% generated. The governing equations can be found in nearly any fluid     %
-% dynamics textbook such as [1,2].                                        %
+% Generate the velocity field for a double gyre [1] with velocity scale   %
+% 'A', centre motion amplitude 'epsi' (approximate) and radial frequency  %
+% 'omega', where the period is 2*pi/omega. A translation and rotation of  %
+% the double gyre can also be specified, the angle being measured         %
+% counterclockwise from the positive x axis. The default origin and angle %
+% are zero. The stream function and the velocity gradient tensor may also %
+% be generated.                                                           %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -64,11 +62,10 @@
 % N/A                                                                     %
 %                                                                         %
 % References:                                                             %
-% [1] Batchelor, G. K. (2007). An Introduction to Fluid Dynamics.         %
-%     Cambridge University Press.                                         %
-% [2] Munson, B. R., Okiishi, T. H., Huebsch, W. W., & Rothmayer, A. P.   %
-%     (2013). Fundamentals of Fluid Mechanics (7th ed.). John Wiley &     %
-%     Sons, Inc.                                                          %
+% [1] Shadden, S. C., Lekien, F., & Marsden, J. E. (2005). Definition and %
+%     properties of Lagrangian coherent structures from finite-time       %
+%     Lyapunov exponents in two-dimensional aperiodic flows. Physica D,   %
+%     212(3-4), 271-304.                                                  %
 %                                                                         %
 % ======================================================================= %
 % Input Arguments (Required):                                             %
@@ -82,28 +79,26 @@
 %                that strictly increases/decreases monotonically from the %
 %                first row to the last.                                   %
 % ----------------------------------------------------------------------- %
-% 'Gamma'        REAL FINITE SCALAR                                       %
-%              ~ Vortex circulation. Rotational strength (or circulation) %
-%                of the irrotational vortex. A positive value corresponds %
-%                to counterclockwise rotation.                            %
+% 'A'            REAL FINITE SCALAR                                       %
+%              ~ Amplitude or velocity scale.                             %
 % ----------------------------------------------------------------------- %
-% 'a'            POSITIVE REAL FINITE SCALAR                              %
-%              ~ Radius. Radius at which the complex velocity potential   %
-%                is set equal to zero.                                    %
+% 'epsi'         REAL FINITE SCALAR                                       %
+%              ~ Amplitude of the gyre centres (approximate).             %
+% ----------------------------------------------------------------------- %
+% 'omega'        REAL FINITE SCALAR                                       %
+%              ~ Radial frequency of oscillation (period = 2*pi/omga).    %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
 % 'ctr'          REAL FINITE TWO-ELEMENT VECTOR                           %
 %                Default: [0 0]                                           %
-%              ~ Potential flow centre. Location, relative to the origin, %
-%                at which the complex velocity potential is singular. The %
-%                centre location is specified as [x y].                   %
+%              ~ Origin location. Translation of the originrelative to    %
+%                zero. The origin location is specified as [x y].         %
 % ----------------------------------------------------------------------- %
 % 'alpha'        REAL FINITE SCALAR                                       %
 %                Default: 0                                               %
-%              ~ Potential flow angle. Rotation of the potential flow by  %
-%                an angle measured counterclockwise from the positive x   %
-%                axis.                                                    %
+%              ~ Gyre angle. Rotation of the double gyres by an angle     %
+%                measured counterclockwise from the positive x axis.      %
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
@@ -117,13 +112,12 @@
 %                1) vel.u representing the velocity component along x;    %
 %                2) vel.v representing the velocity component along y.    %
 %                Each field is a two dimensional array, in ndgrid format  %
-%                (i.e., dimensions represent [x y]).                      %
+%                (i.e., dimensions represent [x y t]).                    %
 % ----------------------------------------------------------------------- %
-% 'cvp'          COMPLEX 2-DIMENSIONAL ARRAY                              %
-%              ~ Complex velocity potential. The complex array contains   %
-%                the potential as the real part and the streamfunction as %
-%                the imaginary part. The output array is in ndgrid format %
-%                (i.e., dimensions represent [x y]).                      %
+% 'psi'          3-DIMENSIONAL ARRAY                                      %
+%              ~ Stream function. The array contains the stream function  %
+%                for the double gyre flow. The output array is in ndgrid  %
+%                format (i.e., dimensions represent [x y t]).             %
 % ----------------------------------------------------------------------- %
 % 'vgt'          STRUCT ARRAY (1 X 1)                                     %
 %              ~ Velocity gradient tensor. The structure array contains   %
@@ -133,41 +127,46 @@
 %                3) vgt.vx representing the derivative of v along x;      %
 %                4) vgt.vy representing the derivative of v along y.      %
 %                Each field is a two dimensional array, in ndgrid format  %
-%                (i.e., dimensions represent [x y]).                      %
+%                (i.e., dimensions represent [x y t]).                    %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
 %                                                                         %
-% Generate an irrotational vortex on the domain (x,y) = ([-1,1],[-1,1])   %
-% with a constant grid spacing of 0.01. Use a circulation of Gamma = 5    %
-% and a zero complex potential radius of 1.                               %
+% Generate a double gyre on the domain (x,y) = ([0,2],[0,1]) with a       %
+% constant grid spacing of 0.01 over the time interval [0,20] with time   %
+% step size 0.1. Use A = 0.1, epsi = 0.25, and omega = 2*pi/10.           %
 %                                                                         %
-% >> coord.x = linspace(-1, 1, 201).';                                    %
-% >> coord.y = linspace(-1, 1, 201).';                                    %
-% >> Gamma   = 5;                                                         %
-% >> a       = 1;                                                         %
-% >> vel     = irrotVortex(coord, Gamma, a);                              %
+% >> coord.t = linspace(0, 20, 21).';                                     %
+% >> coord.x = linspace(0, 2, 201).';                                     %
+% >> coord.y = linspace(0, 1, 101).';                                     %
+% >> A       = 0.1;                                                       %
+% >> epsi    = 0.25;                                                      %
+% >> omega   = 2*pi/10;                                                   %
+% >> vel     = doubleGyre(coord, A, epsi, omega);                         %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [vel, varargout] = irrotVortex(coord, Gamma, a, varargin)
+function [vel, varargout] = doubleGyre(coord, A, epsi, omega, varargin)
 
 
 %% PARSE INPUTS
 
 % Input defaults.
-default.ctr = [0 0];
+default.ctr   = [0 0];
 default.alpha = 0;
 
 % Input checks.
-check.coord = @(x) examineCoord(x, ["x" "y"], 'all');
-check.Gamma = @(x) validateattributes(x,                                ...
+check.coord = @(x) examineCoord(x, ["t" "x" "y"], 'all');
+check.A     = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
                    {'finite', 'real', 'scalar'});
-check.a     = @(x) validateattributes(x,                                ...
+check.epsi  = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
-                   {'finite', 'real', 'positive', 'scalar'});
+                   {'finite', 'real', 'scalar'});
+check.omega = @(x) validateattributes(x,                                ...
+                   {'logical', 'numeric'},                              ...
+                   {'finite', 'real', 'scalar'});
 check.ctr   = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
                    {'finite', 'real', 'vector', 'numel', 2});
@@ -178,33 +177,45 @@ check.alpha = @(x) validateattributes(x,                                ...
 % Parse the inputs.
 hParser = inputParser;
 addRequired ( hParser, 'coord' ,                 check.coord );
-addRequired ( hParser, 'Gamma' ,                 check.Gamma );
-addRequired ( hParser, 'a'     ,                 check.a     );
+addRequired ( hParser, 'A'     ,                 check.A     );
+addRequired ( hParser, 'epsi'  ,                 check.epsi  );
+addRequired ( hParser, 'omega' ,                 check.omega );
 addOptional ( hParser, 'ctr'   , default.ctr   , check.ctr   );
 addOptional ( hParser, 'alpha' , default.alpha , check.alpha );
-parse(hParser, coord, Gamma, a, varargin{:});
+parse(hParser, coord, A, epsi, omega, varargin{:});
 clear check default;
 
 % Additional verifications.
-narginchk(3,5);
+narginchk(4,6);
 nargoutchk(0,3);
 
 
-%% COMPLEX VELOCITY POTENTIAL
+%% STREAM FUNCTION
 
 % Transform the coordinates.
-zc      = hParser.Results.ctr(1) + 1i*hParser.Results.ctr(2);
+ctr     = hParser.Results.ctr;
 alpha   = hParser.Results.alpha;
 [X0,Y0] = ndgrid(coord.x, coord.y);
-Z0      = X0 + 1i*Y0;
-Zp      = Z0 - zc;
-Z       = Zp*exp(-1i*alpha);
-dZ      = exp(-1i*alpha)*ones(size(Z));
-clear alpha X0 Y0 Z0 zc;
+X       =  (X0 - ctr(1))*cos(alpha) + (Y0 - ctr(2))*sin(alpha);
+Y       = -(X0 - ctr(1))*sin(alpha) + (Y0 - ctr(2))*cos(alpha);
+clear ctr X0 Y0;
 
-% Define the complex velocity potential.
-cvp = -1i*(Gamma/2/pi)*log(Z/a);
-if nargout > 1, varargout{1} = cvp; end
+% Define intermediate variables.
+A     = hParser.Results.A;
+epsi  = hParser.Results.epsi;
+omega = hParser.Results.omega;
+t0    = permute(coord.t, [3 2 1]);
+at    = epsi*sin(omega*t0);
+bt    = 1 - 2*at;
+fxt   = at.*X.^2 + bt.*X;
+dfxt  = 2*at.*X + bt;
+d2fxt = 2*at;
+clear at bt t0;
+
+% Define the stream function.
+psi = -A*sin(pi*fxt).*sin(pi*Y);
+if nargout > 1, varargout{1} = psi; end
+clear psi;
 
 
 %% VELOCITY FIELD
@@ -213,27 +224,25 @@ if nargout > 1, varargout{1} = cvp; end
 vel = struct('u' , 0, 'v' , 0);
 
 % Compute the velocity field.
-dcvp  = -1i*(Gamma/2/pi)*dZ./Z;
-vel.u =  real(dcvp);
-vel.v = -imag(dcvp);
-clear cvp dcvp dZ Z;
+vel.u = -A*pi*cos(alpha)*sin(pi*fxt).*cos(pi*Y);
+vel.v =  A*pi*cos(alpha)*dfxt.*cos(pi*fxt).*sin(pi*Y);
 
 
 %% VELOCITY GRADIENT TENSOR
 
-X = real(Zp);
-Y = imag(Zp);
 if nargout > 2
     % Initialize the velocity gradient tensor.
     varargout{2} = struct('ux' , 0, 'uy' , 0, 'vx' , 0, 'vy' , 0);
 
     % Compute the velocity gradient tensor.
-    varargout{2}.ux = -(4*pi/Gamma)*vel.u.*vel.v;
-    varargout{2}.uy =  (2*pi/Gamma)*(vel.u.^2 - vel.v.^2);
-    varargout{2}.vx =  varargout{2}.uy;
-    varargout{2}.vy = -varargout{2}.ux;
+    varargout{2}.ux = -A*pi^2*cos(alpha)*dfxt.*cos(pi*fxt).*cos(pi*Y);
+    varargout{2}.uy =  A*pi^2*cos(alpha)*sin(pi*fxt).*sin(pi*Y);
+    varargout{2}.vx =  A*pi*cos(alpha)*sin(pi*Y)                        ...
+                   .*( d2fxt.*cos(pi*fxt)                               ...
+                    -  pi*dfxt.^2.*sin(pi*fxt));
+    varargout{2}.vy =  A*pi^2*cos(alpha)*dfxt.*cos(pi*fxt).*cos(pi*Y);
 end
-clear X Y Zp;
+clear dxt dfxt d2fxt X Y;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -259,13 +268,7 @@ clear X Y Zp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
-% 2022/06/10 -- (GDL) Edited header text.                                 %
-% 2022/06/09 -- (GDL) Fixed grid error.                                   %
-% 2022/06/09 -- (GDL) Added angle variable to set zero potential point.   %
-% 2022/05/20 -- (GDL) Corrected velocity gradient tensor.                 %
-% 2022/05/19 -- (GDL) Simplified the code, added radius parameter.        %
-% 2022/03/18 -- (GDL) Added narginchk.                                    %
-% 2022/03/04 -- (GDL) Beta version of the code finalized.                 %
+% 2022/06/10 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
