@@ -74,7 +74,8 @@
 %              ~ Coordinates. The structure array contains the following  %
 %                fields:                                                  %
 %                1) coord.x representing the space coordinate x;          %
-%                2) coord.y representing the space coordinate y.          %
+%                2) coord.y representing the space coordinate y;          %
+%                3) coord.t representing the time coordinate t.           %
 %                Each field is a column vector (one-dimensional array)    %
 %                that strictly increases/decreases monotonically from the %
 %                first row to the last.                                   %
@@ -136,9 +137,9 @@
 % constant grid spacing of 0.01 over the time interval [0,20] with time   %
 % step size 0.1. Use A = 0.1, epsi = 0.25, and omega = 2*pi/10.           %
 %                                                                         %
-% >> coord.t = linspace(0, 20, 21).';                                     %
 % >> coord.x = linspace(0, 2, 201).';                                     %
 % >> coord.y = linspace(0, 1, 101).';                                     %
+% >> coord.t = linspace(0, 20, 21).';                                     %
 % >> A       = 0.1;                                                       %
 % >> epsi    = 0.25;                                                      %
 % >> omega   = 2*pi/10;                                                   %
@@ -157,7 +158,7 @@ default.ctr   = [0 0];
 default.alpha = 0;
 
 % Input checks.
-check.coord = @(x) examineCoord(x, ["t" "x" "y"], 'all');
+check.coord = @(x) examineCoord(x, ["x" "y" "t"], 'all');
 check.A     = @(x) validateattributes(x,                                ...
                    {'logical', 'numeric'},                              ...
                    {'finite', 'real', 'scalar'});
@@ -268,6 +269,7 @@ clear dxt dfxt d2fxt X Y;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/06/15 -- (GDL) Fixed input check for coord.                        %
 % 2022/06/10 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
