@@ -183,7 +183,7 @@
 % >> omega   = 2*pi/10;                                                   %
 % >> vel     = doubleGyre(coord, A, epsi, omega);                         %
 % >> ftle    = ftle2ODE(coord, vel, [1 1], 15);                           %
-% >> pcolor(ftle.x, ftle.y, ftle.val.');                                  %
+% >> pcolor(coord.x, coord.y, ftle.');                                    %
 % >> shading interp;                                                      %
 % >> axis equal tight;                                                    %
 %                                                                         %
@@ -205,7 +205,7 @@
 % >> omega   = 2*pi/10;                                                   %
 % >> vel     = doubleGyre(coord, A, epsi, omega);                         %
 % >> ftle    = ftle2ODE(coord, vel, [201 201], -15);                      %
-% >> pcolor(ftle.x, ftle.y, ftle.val.');                                  %
+% >> pcolor(coord.x, coord.y, ftle.');                                    %
 % >> shading interp;                                                      %
 % >> axis equal tight;                                                    %
 %                                                                         %
@@ -228,7 +228,7 @@ default.odeOpts = odeset('RelTol', 1e-6, 'AbsTol', 1e-8);
 check.coord   = @(x) isfield(x, 't');
 check.tset    = @(x) validateattributes(x,                              ...
                      {'logical', 'numeric'},                            ...
-                     {'finite', 'positive', 'real', 'increasing',       ...
+                     {'finite', 'positive', 'real', 'nondecreasing',    ...
                       'vector', 'numel', 2});
 check.DT      = @(x) validateattributes(x,                              ...
                      {'logical', 'numeric'},                            ...
@@ -267,35 +267,30 @@ nargoutchk(0,1);
 
 %% INITIALIZATIONS
 
-% Get field information from the coordinate structure.
-fieldsC = fieldnames(coord);
-fieldsV = fieldnames(vel);
-
 % Determine the size of the grid in space and time.
-N.x1 = length(coord.(fieldsC{1}));
-N.x2 = length(coord.(fieldsC{2}));
-N.t  = length(coord.t);
+N.x = length(coord.x);
+N.y = length(coord.y);
+N.t = length(coord.t);
 
 % Determine the discretization size in space and time.
-d.x1 = diff(coord.(fieldsC{1})(1:2));
-d.x2 = diff(coord.(fieldsC{2})(1:2));
-d.t  = diff(coord.t(1:2));
+d.x = diff(coord.x(1:2));
+d.y = diff(coord.y(1:2));
+d.t = diff(coord.t(1:2));
 
 % Initialize the FTLE array.
-ftle = zeros(N.x1, N.x2, diff(tset)+1);
+ftle = zeros(N.x, N.y, diff(tset)+1);
 
 % Generate a grid of particles.
-[pts.x1, pts.x2] = ndgrid(coord.(fieldsC{1}), coord.(fieldsC{2}));
+[pts.x, pts.y] = ndgrid(coord.x, coord.y);
 
 % Adjust variables for backward time integration.
 tvec = (tset(1):tset(2)).';
 if (DT < 0)
-    coord.t          = flipud(coord.t);
-    vel.(fieldsV{1}) = flip(vel.(fieldsV{1}), 3);
-    vel.(fieldsV{2}) = flip(vel.(fieldsV{2}), 3);
-    tvec             = (N.t + 1) - tvec;
+    coord.t = flipud(coord.t);
+    vel.u   = flip(vel.u, 3);
+    vel.v   = flip(vel.v, 3);
+    tvec    = (N.t + 1) - tvec;
 end
-clear fieldsC fieldsV;
 
 if strcmpi(hParser.Results.subNaNs, 'on'), tspan = DT*[0 1];
 else,                                      tspan = DT*[0 0.5 1];
@@ -325,43 +320,43 @@ for kt = tvec
     if strcmpi(hParser.Results.subNaNs, 'on')
         % Permute the result of the advection so that the first dimension
         % represents time.
-        adv.x1 = permute(adv.x1, [3 1 2]);
-        adv.x2 = permute(adv.x2, [3 1 2]);
+        adv.x = permute(adv.x, [3 1 2]);
+        adv.y = permute(adv.y, [3 1 2]);
         
         % Determine the indices at which NaN values appear.
-        [idxl, ~, idxt, idxs] = idNodeidx(isnan(adv.x1));
+        [idxl, ~, idxt, idxs] = idNodeidx(isnan(adv.x));
 
         % Set all NaN values at the final time to their last valid values.
         if ~isempty(idxl)
             idxl(idxl == 1) = 2;
-            adv.x1(idxt) = adv.x1(idxl-1);
-            adv.x2(idxt) = adv.x2(idxl-1);
+            adv.x(idxt) = adv.x(idxl-1);
+            adv.y(idxt) = adv.y(idxl-1);
         end
         if ~isempty(idxs)
-            adv.x1(idxs) = adv.x1(idxs-1);
-            adv.x2(idxs) = adv.x2(idxs-1);
+            adv.x(idxs) = adv.x(idxs-1);
+            adv.y(idxs) = adv.y(idxs-1);
         end
         
         % Inverse permute the advection result.
-        adv.x1 = ipermute(adv.x1, [3 1 2]);
-        adv.x2 = ipermute(adv.x2, [3 1 2]);
+        adv.x = ipermute(adv.x, [3 1 2]);
+        adv.y = ipermute(adv.y, [3 1 2]);
     end
 
     % Keep only the final integration time.
-    adv.x1 = adv.x1(:,:,end);
-    adv.x2 = adv.x2(:,:,end);
+    adv.x = adv.x(:,:,end);
+    adv.y = adv.y(:,:,end);
     
     if isempty(hParser.Results.mask)
-        dgt11 = ddxO2uFD(adv.x1(:,:,end), d.x1, 1);
-        dgt12 = ddxO2uFD(adv.x1(:,:,end), d.x2, 2);
-        dgt21 = ddxO2uFD(adv.x2(:,:,end), d.x1, 1);
-        dgt22 = ddxO2uFD(adv.x2(:,:,end), d.x2, 2);
+        dgt11 = ddxO2uFD(adv.x(:,:,end), d.x, 1);
+        dgt12 = ddxO2uFD(adv.x(:,:,end), d.y, 2);
+        dgt21 = ddxO2uFD(adv.y(:,:,end), d.x, 1);
+        dgt22 = ddxO2uFD(adv.y(:,:,end), d.y, 2);
     else
         mask  = hParser.Results.mask(:,:,end);
-        dgt11 = ddxO2uFDg(adv.x1(:,:,end), d.x1, mask, 1);
-        dgt12 = ddxO2uFDg(adv.x1(:,:,end), d.x2, mask, 2);
-        dgt21 = ddxO2uFDg(adv.x2(:,:,end), d.x1, mask, 1);
-        dgt22 = ddxO2uFDg(adv.x2(:,:,end), d.x2, mask, 2);
+        dgt11 = ddxO2uFDg(adv.x(:,:,end), d.x, mask, 1);
+        dgt12 = ddxO2uFDg(adv.x(:,:,end), d.y, mask, 2);
+        dgt21 = ddxO2uFDg(adv.y(:,:,end), d.x, mask, 1);
+        dgt22 = ddxO2uFDg(adv.y(:,:,end), d.y, mask, 2);
     end
     
     % Compute the elements of the right Cauchy-Green strain tensor.
@@ -402,12 +397,14 @@ end
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2022/06/17 -- (GDL) Simplified the code to use (x,y,t) and (u,v).       %
 % 2022/06/17 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
 % FUTURE UPDATES                                                          %
 %                                                                         %
-% Complete the mask support functionality.                                %
+% [1] Complete the mask support functionality.                            %
+% [2] Find a more clever way to handle different coordinate combinations. %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
