@@ -1,0 +1,69 @@
+\ProvidesPackage{matfluids}
+
+%%%%%%%%%% PACKAGES
+
+\RequirePackage{amsfonts}				% TeX fonts from the American Mathematical Society (AMS)
+\RequirePackage{amsmath}				% AMS mathematical facilities for LaTeX
+\RequirePackage[english]{babel}			% Multilingual support for plain TeX or LaTeX
+\RequirePackage{colortbl}				% Add colour to LaTeX tables
+\RequirePackage[T1]{fontenc}			% Standard package for selecting font encodings
+\RequirePackage{hyperref}				% Extensive support for hypertext in LaTeX
+\RequirePackage{apacite}				% Citation style following the rules of the APA
+										%%% Note: Must be loaded after hyperref
+\RequirePackage[all]{hypcap}			% Adjusting the anchors of captions
+										%%% Note: Must be loaded after hyperref
+\RequirePackage[utf8]{inputenc}			% Accept different input encodings
+\RequirePackage{lmodern}
+\RequirePackage{textcomp}				% LaTeX support for the Text Companion fonts
+\RequirePackage{upgreek}				% Upright Greek letters
+\RequirePackage[x11names, rgb]{xcolor}	% Driver-independent color extensions for LaTeX and pdfLaTeX
+\RequirePackage{matlab-prettifier}
+\RequirePackage{lstautogobble}
+\RequirePackage{pdfpages}				% Include PDF documents in LaTeX
+										%%% Note: Must be loaded after xcolor
+
+%%%%%%%%%% SETTINGS: GENERAL
+
+\setlength{\parindent}{15pt}			% Define paragraph indent size
+\setlength{\parskip}{10pt}              % Define spacing between paragraphs
+
+%%%%%%%%%% SETTINGS: APACITE
+
+\let\citet\shortciteA					% Define textual citation command like natbib
+\let\citep\shortcite					% Define parenthetical citation command like natbib
+
+% Define a command to force a specific order in the bibliography when needed.
+\newcommand{\noop}[1]{}
+% Change the volume number to be bold rather than italic in the bibliography.
+\let\oldAPACjournalVolNumPages\APACjournalVolNumPages
+\renewcommand{\APACjournalVolNumPages}[4]{\oldAPACjournalVolNumPages{#1}{\textbf{\upshape{#2}}}{#3}{#4}}
+
+%%%%%%%%%% SETTINGS: HYPERREF
+
+\hypersetup{
+	breaklinks = true,
+	citecolor  = blue,
+	colorlinks = true,
+	filecolor  = blue,
+	linkcolor  = blue,      
+	urlcolor   = blue
+}
+
+%%%%%%%%%% COMMANDS
+
+\input{src/commands.tex}
+
+%%% Environments
+\newenvironment{code}{%
+	\ttfamily
+	\begin{center}
+		\begin{tabular}{>{\columncolor{Snow2}}p{0.9650\textwidth}}
+			\\[-15pt]
+}{%
+		\end{tabular}
+	\end{center}
+}
+\newcommand{\MATcommand}{\hspace{6.00pt}\raisebox{-0.500pt}{\scalebox{1}[1.20]{\texttt{>\hspace{0.00pt}>}}}}
+\newcommand{\MATnull}{\hspace{6.00pt}}
+\newcommand{\MATtimes}{\raisebox{2.75pt}{\scriptsize\texttt{\textborn}}}
+\newcommand{\MATtrans}{\raisebox{6.00pt}{\hspace*{-1.00pt}\texttt{\char13}}}

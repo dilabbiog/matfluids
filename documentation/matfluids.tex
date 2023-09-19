@@ -1,6 +1,6 @@
 \documentclass[10pt, twoside]{book}
 
-\usepackage{matfluids-sty}
+\usepackage{src/matfluids}
 
 \begin{document}
 	
@@ -28,68 +28,66 @@
 		
 		\section{\label{sec:UniformFlow}Uniform Flow}
 			
-			The most elementary flow that \MATfluids\ incorporates is the case of a uniform flow, namely, one where the magnitude and direction of velocity is constant everywhere. In rectangular coordinates, the potential ($\phi$) and stream ($\psi$) functions for a uniform flow are given by
-			\begin{subequations}
-				\label{eq:UniformFlowDef}
-				\begin{align}
-					\phi\left(x,y\right) &= U_{\infty}x,\label{eq:UniformFlowDefPhi}\\
-					\psi\left(x,y\right) &= U_{\infty}y,\label{eq:UniformFlowDefPsi}
-				\end{align}
-			\end{subequations}
-			where $U_{\infty}$ denotes the constant velocity magnitude of the flow oriented in the positive $x$ direction. In polar coordinates, we have
-			\begin{subequations}
-				\label{eq:UniformFlowPDef}
-				\begin{align}
-					\phi\left(r,\theta\right) &= U_{\infty}r\cos\theta,\label{eq:UniformFlowPDefPhi}\\
-					\psi\left(r,\theta\right) &= U_{\infty}r\sin\theta,\label{eq:UniformFlowPDefPsi}
-				\end{align}
-			\end{subequations}
-			The potential and stream functions can be written compactly using the complex potential function ($\Phi = \phi + i\psi$) and the complex coordinate $z = re^{i\theta} = x + iy$,
+			The most elementary flow that \MATfluids\ incorporates is the case of a uniform flow, namely, one where the magnitude and direction of velocity is constant everywhere. In a reference frame whose positive $x^{\prime}$ axis is aligned with the flow direction, the complex potential is given by
 			\begin{equation}
-				\label{eq:UniformFlowDefPHI}
-				\Phi\left(z\right) = U_{\infty}z.
+				\label{eq:UniformFlowPHI0}
+				\Phi\left(z^{\prime}\right) = U_{\infty}z^{\prime}
 			\end{equation}
-			We can use the coordinate transformation $z \rightarrow z^{\prime}e^{-i\alpha}$ to produce a uniform flow inclined at an angle $\alpha$, measured counterclockwise from the positive $x^{\prime}$ axis, in the $z^{\prime}$ coordinate system. Dropping the primes, the complex potential function can be expressed as
+			where $U_{\infty}$ denotes the constant velocity magnitude of the flow. More generally, relative to the arbitrary reference frame $z^{\prime} = \left(z - z_c\right)e^{-i\alpha}$, the complex potential is instead given by
 			\begin{equation}
-				\label{eq:UniformFlowDefPHI2}
-				\Phi\left(z\right) = U_{\infty}ze^{-i\alpha}
+				\label{eq:UniformFlowPHI}
+				\Phi\left(z\right) = U_{\infty}\left(z - z_c\right)e^{-i\alpha}.
 			\end{equation}
-			or, expanding in rectangular and polar coordinates,
+			Relative to this frame, the flow is inclined at an angle $\alpha$ measured counterclockwise from the positive $x$ axis. The `centre' coordinate $z_c$, in this case, is an arbitrary constant to fix the location at which $\Phi\left(z\right) = 0$. In rectangular and polar coordinates, the potential ($\phi$) and stream ($\psi$) functions are therefore defined as
 			\begin{subequations}
-				\label{eq:UniformFlowDef2}
+				\label{eq:UniformFlowPhiPsi}
 				\begin{alignat}{2}
-					\phi &= U_{\infty}\left(x\cos\left(\alpha\right) + y\sin\left(\alpha\right)\right) &&= U_{\infty}r\cos\left(\theta-\alpha\right),\label{eq:UniformFlowDefPhi2}\\
-					\psi &= U_{\infty}\left(y\cos\left(\alpha\right) - x\sin\left(\alpha\right)\right) &&= U_{\infty}r\sin\left(\theta-\alpha\right).\label{eq:UniformFlowDefPsi2}
+					\phi &= U_{\infty}\left(x\cos\left(\alpha\right) + y\sin\left(\alpha\right)\right) &&= U_{\infty}r\cos\left(\theta-\alpha\right),\label{eq:UniformFlowPhi}\\
+					\psi &= U_{\infty}\left(y\cos\left(\alpha\right) - x\sin\left(\alpha\right)\right) &&= U_{\infty}r\sin\left(\theta-\alpha\right).\label{eq:UniformFlowPsi}
 				\end{alignat}
 			\end{subequations}
-			The corresponding velocity components are then given by
+			The corresponding velocity components, in rectangular coordinates, are then given by
 			\begin{subequations}
 				\label{eq:UniformFlowVel}
 				\begin{alignat}{4}
 					u &= \frac{\partial\phi}{\partial x} &&=  &&\frac{\partial\psi}{\partial y} &&= U_{\infty}\cos\left(\alpha\right),\label{eq:UniformFlowVelU}\\
-					v &= \frac{\partial\phi}{\partial y} &&= -&&\frac{\partial\psi}{\partial x} &&= U_{\infty}\sin\left(\alpha\right).\label{eq:UniformFlowVelV}
+					v &= \frac{\partial\phi}{\partial y} &&= -&&\frac{\partial\psi}{\partial x} &&= U_{\infty}\sin\left(\alpha\right)\label{eq:UniformFlowVelV}
+				\end{alignat}
+			\end{subequations}
+			and in polar coordinates by
+			\begin{subequations}
+				\label{eq:UniformFlowPolar}
+				\begin{alignat}{7}
+					u_r &= &&\frac{\partial\phi}{\partial r} &&=  &&\frac{1}{r}&&\frac{\partial\psi}{\partial \theta} &&= &&U_{\infty}\cos\left(\theta - \alpha\right),\label{eq:UniformFlowVelUr}\\
+					u_{\theta} &= \frac{1}{r}&&\frac{\partial\phi}{\partial \theta} &&= &&-&&\frac{\partial\psi}{\partial r} &&= -&&U_{\infty}\sin\left(\theta - \alpha\right).\label{eq:UniformFlowVelUt}
 				\end{alignat}
 			\end{subequations}
 			Given that the magnitude and direction of velocity is constant everywhere in the flow, the velocity gradient is identically zero ($\nabla\mathbf{u} = \mathbf{0}$).
 			
-			
-			
 		\section{\label{sec:IrrotVortex}The Irrotational (or Potential) Vortex}
 			
-			The irrotational (or potential) vortex is a classical example of a potential flow taught in fundamental fluid dynamics courses. In polar coordinates, its potential and stream functions are defined by
+			The irrotational (or potential) vortex is a classical example of a potential flow taught in fundamental fluid dynamics courses. The complex potential is given by
+			\begin{equation}
+				\label{eq:IrrotVortexPHI}
+				\Phi\left(z\right) = -i\frac{\Gamma}{2\pi}\ln\left(\frac{z - z_c}{a}\right).
+			\end{equation}
+			where $\Gamma$ is the circulation or strength of the vortex (positive counterclockwise), $a$ is the radius at which the stream function is zero and $z_c$ is the location of the centre of the vortex. In rectangular and polar coordinates, its potential and stream functions are defined by
 			\begin{subequations}
-			\label{eq:IrrotVortexDefsPolar}
-				\begin{alignat}{2}
-					\phi\left(r,\theta\right) &=  &&\frac{\Gamma}{2\pi}\theta,\label{eq:IrrotVortexDefsPolarPhi}\\
-					\psi\left(r,\theta\right) &= -&&\frac{\Gamma}{2\pi}\ln\left(\frac{r}{a}\right),\label{eq:IrrotVortexDefsPolarPsi}
+			\label{eq:IrrotVortexPhiPsi}
+				\begin{alignat}{4}
+					\phi &= &&\frac{\Gamma}{2\pi}\arctan\left(\frac{y - y_c}{x - x_c}\right) &&= &&\frac{\Gamma}{2\pi}\arctan\left(\frac{r\sin\theta - r_c\sin\theta_c}{r\cos\theta - r_c\cos\theta_c}\right),\label{eq:IrrotVortexPhi}\\
+					\psi &= -&&\frac{\Gamma}{4\pi}\ln\left(\frac{\left(x - x_c\right)^2 + \left(y - y_c\right)^2}{a^2}\right) &&= -&&\frac{\Gamma}{4\pi}\ln\left(\frac{r^2 + r_c^2 - 2rr_c\cos\left(\theta - \theta_c\right)}{a^2}\right),\label{eq:IrrotVortexPsi}
 				\end{alignat}
 			\end{subequations}
-			where $\Gamma$ is the circulation or strength of the vortex (positive counterclockwise) and $a$ is the radius at which the stream function is zero. The complex potential function is given by
-			\begin{equation}
-				\label{eq:IrrotVortexDefPHI}
-				\Phi\left(z\right) = -i\frac{\Gamma}{2\pi}\ln\left(\frac{z}{a}\right).
-			\end{equation}
-			We can use the coordinate transformation $z \rightarrow z^{\prime} - z^{\prime}_c$ to produce an irrotational vortex whose centre is located at $z^{\prime}_c$ in the $z^{\prime}$ coordinate system. The corresponding velocity components in polar coordinates are therefore given by
+			where it should be understood that the `$\arctan$' in Eq.~(\ref{eq:IrrotVortexPhi}) ought to return an angle respecting a chosen polar coordinate system (e.g., often either between $-\pi$ and $\pi$ or between $0$ and $2\pi$). For these purposes, it is useful to use the \texttt{atan2} function (the four-quadrant inverse tangent) available in most programming languages (including MATLAB), which considers the sign of the numerator and denomenator and returns an angle between $-\pi$ and $\pi$. The corresponding velocity components,in rectangular coordinates, are then given by
+			\begin{subequations}
+				\label{eq:IrrotVortexVel}
+				\begin{alignat}{2}
+					u &= -&&\frac{\Gamma}{2\pi}\frac{y - y_c}{\left(x - x_c\right)^2 + \left(y - y_c\right)^2},\label{eq:IrrotVortexVelU}\\
+					v &=  &&\frac{\Gamma}{2\pi}\frac{x - x_c}{\left(x - x_c\right)^2 + \left(y - y_c\right)^2}.\label{eq:IrrotVortexVelV}
+				\end{alignat}
+			\end{subequations}
+			and in polar coordinates by
 			\begin{subequations}
 			\label{eq:IrrotVortexVelPolar}
 				\begin{alignat}{5}
@@ -97,29 +95,13 @@
 					u_{\theta} &= \frac{1}{r}&&\frac{\partial\phi}{\partial \theta} &&= -&&\frac{\partial\psi}{\partial r} &&= \frac{\Gamma}{2\pi r}.\label{eq:IrrotVortexVelPolarUt}
 				\end{alignat}
 			\end{subequations}
-			In Cartesian coordinates, given that $r^2 = x^2 + y^2$ and $\tan\left(\theta\right) = y/x$, the potential and stream functions can be described as
-			\begin{subequations}
-			\label{eq:IrrotVortexDefs}
-				\begin{alignat}{2}
-					\phi\left(x,y\right) &=  &&\frac{\Gamma}{2\pi}\arctan\left(\frac{y}{x}\right),\label{eq:IrrotVortexDefsPhi}\\
-					\psi\left(x,y\right) &= -&&\frac{\Gamma}{4\pi}\ln\left(x^2 + y^2\right),\label{eq:IrrotVortexDefsPsi}
-				\end{alignat}
-			\end{subequations}
-			where it should be understood that the `$\arctan$' in Eq.~(\ref{eq:IrrotVortexDefsPhi}) ought to return an angle respecting a chosen polar coordinate system (e.g., often either between $-\pi$ and $\pi$ or between $0$ and $2\pi$). For these purposes, it is useful to use the \texttt{atan2} function (the four-quadrant inverse tangent) available in most programming languages (including MATLAB), which considers the sign of $x$ and $y$ and returns an angle between $-\pi$ and $\pi$. The corresponding velocity components in Cartesian coordinates are given by
-			\begin{subequations}
-				\label{eq:IrrotVortexVel}
-				\begin{alignat}{2}
-					u &= -&&\frac{\Gamma}{2\pi}\frac{y}{x^2 + y^2},\label{eq:IrrotVortexVelPolarU}\\
-					v &=  &&\frac{\Gamma}{2\pi}\frac{x}{x^2 + y^2}.\label{eq:IrrotVortexVelPolarV}
-				\end{alignat}
-			\end{subequations}
 			The components of the velocity gradient tensor are then given by
 			\begin{subequations}
 			\label{eq:IrrotVortexVgt}
 				\begin{alignat}{4}
 					\frac{\partial u}{\partial x} &= &&\frac{\Gamma}{2\pi}\frac{2xy}{\left(x^2 + y^2\right)^2} &&= -&&\frac{4\pi}{\Gamma}uv,\label{eq:IrrotVortexVgtUx}\\
-					\frac{\partial u}{\partial y} &= -&&\frac{\Gamma}{2\pi}\frac{x^2}{\left(x^2 + y^2\right)^2} &&= -&&\frac{2\pi}{\Gamma}v^2,\label{eq:IrrotVortexVgtUy}\\
-					\frac{\partial v}{\partial x} &= &&\frac{\Gamma}{2\pi}\frac{y^2}{\left(x^2 + y^2\right)^2} &&= &&\frac{2\pi}{\Gamma}u^2,\label{eq:IrrotVortexVgtVx}\\
+					\frac{\partial u}{\partial y} &= -&&\frac{\Gamma}{2\pi}\frac{x^2 - y^2}{\left(x^2 + y^2\right)^2} &&= &&\frac{2\pi}{\Gamma}\left(u^2 - v^2\right),\label{eq:IrrotVortexVgtUy}\\
+					\frac{\partial v}{\partial x} &= -&&\frac{\Gamma}{2\pi}\frac{x^2 - y^2}{\left(x^2 + y^2\right)^2} &&= &&\frac{2\pi}{\Gamma}\left(u^2 - v^2\right),\label{eq:IrrotVortexVgtVx}\\
 					\frac{\partial v}{\partial y} &= -&&\frac{\Gamma}{2\pi}\frac{2xy}{\left(x^2 + y^2\right)^2} &&= &&\frac{4\pi}{\Gamma}uv.\label{eq:IrrotVortexVgtVy}
 				\end{alignat}
 			\end{subequations}
@@ -342,6 +324,6 @@
 	\backmatter
 	
 	\bibliographystyle{apacite}
-	\bibliography{matfluids-bib}
+	\bibliography{matfluids}
 	
 \end{document}
