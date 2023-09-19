@@ -37,12 +37,12 @@
 % SYNTAX                                                                  %
 %                                                                         %
 % [Phi, A, props] = dmdExact(X);                                          %
-% [Phi, A, props] = dmdExact(X, dt);                                      %
+% [Phi, A, props] = dmdExact(X, 'zeromean');                              %
 % [Phi, A, props] = dmdExact(___, Name, Value);                           %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Compute the exact dynamic mode decomposition [1,2] of a dataset. The    %
+% Compute the exact dynamic mode decomposition [1-2] of a dataset. The    %
 % input data is stored in a matrix X whose columns represent distinct     %
 % realizations of a measurement (e.g., snapshots over time) and whose     %
 % rows represent a series of measurements (e.g., taken at a given time).  %
@@ -83,13 +83,17 @@
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
+% 'zeromean'     POSITIVE REAL SCALAR                                     %
+%                Default: 0                                               %
+%              ~ Subtract the mean of all realizations from the dataset.  %
+% ======================================================================= %
+% Name-Value Pair Arguments:                                              %
+% ----------------------------------------------------------------------- %
 % 'dt'           POSITIVE REAL SCALAR                                     %
 %                Default: 1                                               %
 %              ~ Spacing between different realizations. In many cases,   %
 %                dt is simply the time between sequential snapshots of a  %
 %                dataset.                                                 %
-% ======================================================================= %
-% Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
 % 'pairTol'      NONNEGATIVE REAL SCALAR                                  %
 %                Default: 10^(-8)                                         %
@@ -121,16 +125,16 @@
 % 'props'        STRUCT ARRAY (1 X 1)                                     %
 %              ~ Properties of the exact dynamic mode decomposition. The  %
 %                structure array contains the following fields:           %
-%                 1) amp     : Mode amplitude                             %
-%                 2) ampsc   : Scaled mode amplitude                      %
-%                 3) coh     : Mode coherence measure [3]                 %
-%                 4) eigCT   : Continuous-time eigenvalues                %
-%                 5) eigDT   : Discrete-time eigenvalues                  %
-%                 6) energy  : Mode energy                                %
-%                 7) entropy : Entropy of the energy distribution         %
-%                 8) freq    : Mode frequency                             %
-%                 9) pair    : Mode has conjugate pair (1) or not (0)     %
-%                10) rank    : Rank of the singular value decomposition   %
+%                 1) b     : Mode amplitude                               %
+%                 2) bsc   : Scaled mode amplitude                        %
+%                 3) coh   : Mode coherence measure [3]                   %
+%                 4) eigCT : Continuous-time eigenvalues                  %
+%                 5) eigDT : Discrete-time eigenvalues                    %
+%                 6) E     : Mode energy                                  %
+%                 7) H     : Shannon entropy of modal energy distribution %
+%                 8) f     : Mode standard frequency                      %
+%                 9) pair  : Mode has conjugate pair (1) or not (0)       %
+%                10) rk    : Rank of the singular value decomposition     %
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
@@ -149,6 +153,7 @@ function [Phi, A, props] = dmdExact(X, varargin)
 default.dt      = 1;
 default.pairTol = 10^(-8);
 default.rankTol = 0;
+default.remAvg  = 0;
 
 % Input checks.
 check.X       = @(x) validateattributes(x,                              ...
@@ -163,18 +168,20 @@ check.pairTol = @(x) validateattributes(x,                              ...
 check.rankTol = @(x) validateattributes(x,                              ...
                      {'logical', 'numeric'},                            ...
                      {'finite', 'nonnegative', 'real'});
+check.remAvg  = @(x) any(validatestring(x, {'zeromean'}));
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'X'                         , check.X       );
-addOptional ( hParser, 'dt'      , default.dt      , check.dt      );
-addParameter( hParser, 'pairTol' , default.pairTol , check.pairTol );
-addParameter( hParser, 'rankTol' , default.rankTol , check.rankTol );
+addRequired ( hParser , 'X'                         , check.X       );
+addOptional ( hParser , 'remAvg'  , default.remAvg  , check.remAvg  );
+addParameter( hParser , 'dt'      , default.dt      , check.dt      );
+addParameter( hParser , 'pairTol' , default.pairTol , check.pairTol );
+addParameter( hParser , 'rankTol' , default.rankTol , check.rankTol );
 parse(hParser, X, varargin{:});
 clear check default;
 
 % Additional verifications.
-narginchk(1,6);
+narginchk(1,8);
 nargoutchk(0,3);
 
 
@@ -185,6 +192,9 @@ N.x = size(X, 1);
 N.t = size(X, 2);
 
 %% EXACT DYNAMIC MODE DECOMPOSITION
+
+% Remove the average.
+if hParser.Results.remAvg, X = X - mean(X,2); end
 
 % Compute the singular value decomposition.
 [U, S, V] = svd(X(:,1:N.t-1), 'econ');
@@ -266,16 +276,16 @@ H = abs(-sum((E/sum(E)).*log((E/sum(E))))/log(rk));
 clear dt I k;
 
 % Store decomposition properties.
-props.amp     = b;
-props.ampsc   = bpen;
-props.coh     = C;
-props.eigCT   = Omega;
-props.eigDT   = Lambda;
-props.energy  = E;
-props.entropy = H;
-props.freq    = f;
-props.pair    = P;
-props.rank    = rk;
+props.b     = b;
+props.bsc   = bpen;
+props.coh   = C;
+props.eigCT = Omega;
+props.eigDT = Lambda;
+props.E     = E;
+props.H     = H;
+props.f     = f;
+props.pair  = P;
+props.rk    = rk;
 clear b bpen C f H E Lambda Omega P rk;
 
 

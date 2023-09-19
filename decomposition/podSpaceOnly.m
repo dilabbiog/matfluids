@@ -126,7 +126,7 @@
 % constant grid spacing of 0.01 over the time interval [0,20] with time   %
 % step size 0.1 (A = 0.1, epsi = 0.25, omega = 2*pi/10). Compute the      %
 % space-only proper orthogonal decomposition of the velocity field. Plot  %
-% the first spatial mode (x component) and its time dynamics. Plot the    %
+% the first spatial mode (y component) and its time dynamics. Plot the    %
 % energy spectrum for the first 20 modes, normalized by the energy of the %
 % first mode.                                                             %
 %                                                                         %
@@ -144,7 +144,7 @@
 % >>                                                                      %
 % >> phi1.u = reshape(Phi(1:N.x*N.y,1), [N.x N.y]);                       %
 % >> phi1.v = reshape(Phi(N.x*N.y+1:end,1), [N.x N.y]);                   %
-% >> pcolor(coord.x, coord.y, phi1.u.');                                  %
+% >> pcolor(coord.x, coord.y, phi1.v.');                                  %
 % >> shading interp;                                                      %
 % >> axis equal tight;                                                    %
 % >> set(gca, 'Layer', 'top');                                            %
@@ -162,17 +162,17 @@ function [Phi, A, props] = podSpaceOnly(X, varargin)
 %% PARSE INPUTS
 
 % Input defaults.
-default.remAvg  = 0;
 default.rankTol = 0;
+default.remAvg  = 0;
 
 % Input checks.
 check.X       = @(x) validateattributes(x,                              ...
                      {'logical', 'numeric'},                            ...
                      {'finite', 'nonempty', 'ndims', 2});
-check.remAvg  = @(x) any(validatestring(x, {'zeromean'}));
 check.rankTol = @(x) validateattributes(x,                              ...
                      {'logical', 'numeric'},                            ...
                      {'finite', 'nonnegative', 'real'});
+check.remAvg  = @(x) any(validatestring(x, {'zeromean'}));
 
 % Parse the inputs.
 hParser = inputParser;
