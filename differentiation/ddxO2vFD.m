@@ -4,7 +4,7 @@
 %                                                                         %
 % ddxO2vFD                                                                %
 % Finite Difference Scheme                                                %
-% First derivative, quasi-second-order error, variable spacing            %
+% First derivative, quasi-second-order error, arbitrary spacing           %
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
@@ -17,7 +17,7 @@
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% Copyright (C) 2022 Giuseppe Di Labbio                                   %
+% Copyright (C) 2023 Giuseppe Di Labbio                                   %
 %                                                                         %
 % This program is free software: you can redistribute it and/or modify it %
 % under the terms of the GNU General Public License as published by the   %
@@ -36,17 +36,21 @@
 %                                                                         %
 % SYNTAX                                                                  %
 %                                                                         %
+% du = ddxO2vFD(u, dx);                                                   %
 % du = ddxO2vFD(u, x);                                                    %
-% du = ddxO2vFD(u, x, drc);                                               %
+% du = ddxO2vFD(___, drc);                                                %
+% du = ddxO2vFD(___, Name, Value);                                        %
 %                                                                         %
 % DESCRIPTION                                                             %
 %                                                                         %
-% Compute the first derivative of an input array for a variable spacing   %
-% in the specified direction. This function applies a quasi-second-order  %
+% Compute the first derivative of an input array for arbitrary spacing in %
+% the specified direction. This function applies a quasi-second-order     %
 % central finite difference scheme. At the boundaries, a quasi-second-    %
 % order forward or backward finite difference scheme is used. The default %
 % derivative direction is 1. When a vector is being differentiated, the   %
-% direction is determined automatically.                                  %
+% direction is determined automatically. If the spacing is found to be    %
+% uniform within some tolerance, a second-order uniform spacing scheme is %
+% used.                                                                   %
 %                                                                         %
 % Compatibility:                                                          %
 % MATLAB R2019b or later.                                                 %
@@ -69,6 +73,10 @@
 % 'dx'           NONZERO SCALAR                                           %
 %              ~ Input scalar. Uniform spacing in the direction of the    %
 %                differentiation.                                         %
+% ----------------------------------------------------------------------- %
+% 'x'            MONOTONICALLY INCREASING/DECREASING 1-D NUMERIC ARRAY    %
+%              ~ Input vector. Vector of coordinates for the function to  %
+%                be differentiated.                                       %
 % ======================================================================= %
 % Input Arguments (Optional):                                             %
 % ----------------------------------------------------------------------- %
@@ -79,7 +87,9 @@
 % ======================================================================= %
 % Name-Value Pair Arguments:                                              %
 % ----------------------------------------------------------------------- %
-% N/A                                                                     %
+% 'tol'          POSITIVE REAL SCALAR                                     %
+%                Default: 1e-8                                            %
+%              ~ Input scalar. Tolerance to consider spacing as uniform.  %
 % ======================================================================= %
 % Output Arguments:                                                       %
 % ----------------------------------------------------------------------- %
@@ -89,6 +99,22 @@
 % ======================================================================= %
 %                                                                         %
 % EXAMPLE 1                                                               %
+%                                                                         %
+% Compute the derivative of the function u = sin(x) on the interval [0,   %
+% pi] using the second-order, central finite difference scheme with a     %
+% grid spacing of pi/50.                                                  %
+%                                                                         %
+% >> dx      = pi/50;                                                     %
+% >> u       = sin(0:dx:pi).';                                            %
+% >> ux_O2   = ddxO2vFD(u, dx);                                           %
+% >> ux_TRUE = cos(0:dx:pi).';                                            %
+% >> E2      = abs(ux_O2 - ux_TRUE);                                      %
+% >> disp(max(E2(:)));                                                    %
+%     0.0013                                                              %
+%                                                                         %
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
+%                                                                         %
+% EXAMPLE 2                                                               %
 %                                                                         %
 % Compute the derivative of the function u = sin(x) on the interval [0,   %
 % pi] using the quasi-second-order, central finite difference scheme with %
@@ -105,7 +131,27 @@
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
-% EXAMPLE 2                                                               %
+% EXAMPLE 3                                                               %
+%                                                                         %
+% Compute the derivative of the function u = y^2*sin(x) with respect to y %
+% on the interval (x,y) = ([0,pi],[0,1]) using the second-order, central  %
+% finite difference scheme with a grid spacing of (pi/50, 0.01).          %
+%                                                                         %
+% >> dx      = pi/50;                                                     %
+% >> dy      = 0.01;                                                      %
+% >> x       = (0:dx:pi).';                                               %
+% >> y       = (0:dy:1).';                                                %
+% >> [X,Y]   = ndgrid(x,y);                                               %
+% >> u       = (Y.^2).*sin(X);                                            %
+% >> uy_O2   = ddxO2vFD(u, dy, 2);                                        %
+% >> uy_TRUE = 2*Y.*sin(X);                                               %
+% >> E2      = abs(uy_O2 - uy_TRUE);                                      %
+% >> disp(max(E2(:)));                                                    %
+%    3.5083e-14                                                           %
+%                                                                         %
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
+%                                                                         %
+% EXAMPLE 4                                                               %
 %                                                                         %
 % Compute the derivative of the function u = exp(-x) on the interval [2,  %
 % 10] using a quasi-second-order, central finite difference scheme with a %
@@ -121,7 +167,7 @@
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
-% EXAMPLE 3                                                               %
+% EXAMPLE 5                                                               %
 %                                                                         %
 % Compute the derivative of the function u = y^2*sin(x) with respect to y %
 % on the interval (x,y) = ([0,pi],[0,1]) using the quasi-second-order,    %
@@ -138,11 +184,11 @@
 % >> uy_TRUE = 2*Y.*sin(X);                                               %
 % >> E2      = abs(uy_O2 - uy_TRUE);                                      %
 % >> disp(max(E2(:)));                                                    %
-%    5.5955e-14                                                           %
+%    5.3069e-14                                                           %
 %                                                                         %
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %
 %                                                                         %
-% EXAMPLE 4                                                               %
+% EXAMPLE 6                                                               %
 %                                                                         %
 % Compute the derivative of the function u = y^2*sin(x) with respect to y %
 % on the interval (x,y) = ([0,pi],[0,1]) using the quasi-second-order,    %
@@ -171,40 +217,85 @@ function [du] = ddxO2vFD(u, x, varargin)
 
 % Input defaults.
 default.drc = 1;
+default.tol = 1e-8;
 
 % Input checks.
-check.u   = @(x) validateattributes(x,                                  ...
-                 {'logical', 'numeric'},                                ...
-                 {'nonempty'});
-check.x   = @(x) validateattributes(x,                                  ...
-                 {'logical', 'numeric'},                                ...
-                 {'finite', 'increasing', 'vector'});
+if isempty(u), check.u = @(x) 1;
+else,          check.u = @(x) validateattributes(x,                     ...
+                              {'logical', 'numeric'},                   ...
+                              {'nonempty'});
+end
+if isempty(x), check.x = @(x) 1;
+else,          check.x = @(x) validateattributes(x,                     ...
+                              {'logical', 'numeric'},                   ...
+                              {'finite', 'vector'});
+end
 check.drc = @(x) validateattributes(x,                                  ...
                  {'logical', 'numeric'},                                ...
                  {'finite', 'positive', 'scalar'});
+check.tol = @(x) validateattributes(x,                                  ...
+                 {'logical', 'numeric'},                                ...
+                 {'finite', 'nonnegative', 'scalar'});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'u'   ,               check.u   );
-addRequired ( hParser, 'x'   ,               check.x   );
-addOptional ( hParser, 'drc' , default.drc , check.drc );
+addRequired ( hParser , 'u'   ,               check.u   );
+addRequired ( hParser , 'x'   ,               check.x   );
+addOptional ( hParser , 'drc' , default.drc , check.drc );
+addParameter( hParser , 'tol' , default.tol , check.tol );
 parse(hParser, u, x, varargin{:});
 clear check default;
 
 % Additional verifications.
+narginchk(2,5);
 nargoutchk(0,1);
 
 
-%% DIFFERENTIATION
+%% SPECIAL CASES
 
-% Determine the size and number of dimensions of the input array.
-sz = size(u);
-nd = ndims(u);
+% If the variable u is empty/scalar, its derivative is empty/zero.
+if isempty(u)
+    du = [];
+    return;
+elseif isscalar(u)
+    du = 0;
+    return;
+end
+
+
+%% INITIALIZATIONS
+
+% Initialize the spacing array.
+if isempty(x)
+    dx = 1;
+elseif isscalar(x)
+    dx = x;
+else
+    dx = diff(x);
+    if isrow(dx), dx = dx.'; end
+    
+    % Check if coordinate is monotonically increasing/decreasing.
+    sgn = sign(dx);
+    if max(sgn) ~= min(sgn)
+        error('coord:notMonotonic', ...
+             ['Error. \nThe input coordinate must be strictly monotoni' ...
+              'cally increasing or decreasing.']);
+    end
+    
+    % Check if coordinate has uniform spacing.
+    dx0 = uniquetol(dx, hParser.Results.tol);
+    if isscalar(dx0), dx = dx0; end
+    clear dx0;
+end
 
 % Set the derivative direction.
 [dim, drc] = mathdim(u);
 if dim > 1, drc = hParser.Results.drc; end
 clear dim;
+
+% Determine the size and number of dimensions of the input array.
+sz = size(u);
+nd = ndims(u);
 
 % Permute the input array.
 pm = 1:nd;
@@ -215,14 +306,22 @@ if drc > 1
 end
 szp = sz(pm);
 
-% Ensure that x is a column vector.
-if isrow(x), x = x.'; end
-
-% Initialize the spacing array.
-dx = diff(x);
-
 % Initialize the derivative array.
 du = zeros(szp);
+
+
+%% DIFFERENTIATION (UNIFORM SPACING)
+
+% For scalar spacing.
+if isscalar(dx)
+    du = ddxO2uFD(u, dx, 1);
+    du = ipermute(du, pm);
+    clear drc nd pm sz szp;
+    return;
+end
+
+
+%% DIFFERENTIATION (VARIABLE SPACING)
 
 % Generate colon index assignments.
 idx = repmat({':'}, 1, nd-1);
@@ -274,6 +373,7 @@ clear drc nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2023/09/25 -- (GDL) Added support for uniform spacing and empty arrays. %
 % 2022/03/04 -- (GDL) Modified the examples.                              %
 % 2022/03/03 -- (GDL) Beta version of the code finalized.                 %
 %                                                                         %

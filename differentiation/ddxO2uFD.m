@@ -17,7 +17,7 @@
 %                                                                         %
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
 %                                                                         %
-% Copyright (C) 2022 Giuseppe Di Labbio                                   %
+% Copyright (C) 2023 Giuseppe Di Labbio                                   %
 %                                                                         %
 % This program is free software: you can redistribute it and/or modify it %
 % under the terms of the GNU General Public License as published by the   %
@@ -134,38 +134,58 @@ function [du] = ddxO2uFD(u, dx, varargin)
 default.drc = 1;
 
 % Input checks.
-check.u   = @(x) validateattributes(x,                                  ...
-                 {'logical', 'numeric'},                                ...
-                 {'nonempty'});
-check.dx  = @(x) validateattributes(x,                                  ...
-                 {'logical', 'numeric'},                                ...
-                 {'finite', 'nonzero', 'scalar'});
+if isempty(u), check.u = @(x) 1;
+else,          check.u = @(x) validateattributes(x,                     ...
+                              {'logical', 'numeric'},                   ...
+                              {'nonempty'});
+end
+if isempty(dx), check.dx = @(x) 1;
+else,           check.dx = @(x) validateattributes(x,                   ...
+                                {'logical', 'numeric'},                 ...
+                                {'finite', 'nonzero', 'scalar'});
+end
 check.drc = @(x) validateattributes(x,                                  ...
                  {'logical', 'numeric'},                                ...
                  {'finite', 'positive', 'scalar'});
 
 % Parse the inputs.
 hParser = inputParser;
-addRequired ( hParser, 'u'   , check.u                 );
-addRequired ( hParser, 'dx'  , check.dx                );
-addOptional ( hParser, 'drc' , default.drc , check.drc );
+addRequired ( hParser , 'u'   , check.u                 );
+addRequired ( hParser , 'dx'  , check.dx                );
+addOptional ( hParser , 'drc' , default.drc , check.drc );
 parse(hParser, u, dx, varargin{:});
 clear check default;
 
 % Additional verifications.
+narginchk(2,3);
 nargoutchk(0,1);
 
 
-%% DIFFERENTIATION
+%% SPECIAL CASES
 
-% Determine the size and number of dimensions of the input array.
-sz = size(u);
-nd = ndims(u);
+% If the variable u is empty/scalar, its derivative is empty/zero.
+if isempty(u)
+    du = [];
+    return;
+elseif isscalar(u)
+    du = 0;
+    return;
+end
+
+
+%% INITIALIZATIONS
+
+% Initialize the spacing.
+if isempty(dx), dx = 1; end
 
 % Set the derivative direction.
 [dim, drc] = mathdim(u);
 if dim > 1, drc = hParser.Results.drc; end
 clear dim;
+
+% Determine the size and number of dimensions of the input array.
+sz = size(u);
+nd = ndims(u);
 
 % Permute the input array.
 pm = 1:nd;
@@ -175,6 +195,9 @@ if drc > 1
     u       = permute(u, pm);
 end
 szp = sz(pm);
+
+
+%% DIFFERENTIATION (UNIFORM SPACING)
 
 % Initialize the derivative array.
 du = zeros(szp);
@@ -220,6 +243,7 @@ clear drc nd pm sz szp;
 %                                                                         %
 % CHANGE LOG                                                              %
 %                                                                         %
+% 2023/09/25 -- (GDL) Added support for empty arrays.                     %
 % 2022/03/03 -- (GDL) Changed derivative function naming convention.      %
 % 2022/03/03 -- (GDL) Changed function name (removed 'S' identifier).     %
 % 2022/02/28 -- (GDL) Changed input check order.                          %
